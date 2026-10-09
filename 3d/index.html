@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>臺北 2033：松機變身 AI 園區 3D 體驗</title>
+<meta name="description" content="開著臺北小黃，在 3D 臺北親眼看松山機場變身 300 公頃臺北AI園區與 110 公頃中央公園（非官方示意）。">
+<meta property="og:title" content="臺北 2033：松機變身 AI 園區 3D 體驗">
+<meta property="og:description" content="GTA 風格沉浸式 3D 臺北：2026 ⇄ 2033 一鍵切換，看 110 公頃中央公園長出來。">
+<meta property="og:image" content="../assets/og-3d.jpg">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚕</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": { "three": "../vendor/three/three.module.min.js", "three/addons/": "../vendor/three/addons/" } }
+</script>
+</head>
+<body>
+<canvas id="c" aria-label="3D 臺北場景"></canvas>
+
+<!-- loading / intro -->
+<section id="intro" class="screen">
+  <div class="intro-grid">
+    <div class="intro-photo"><img id="introPhoto" alt="臺北市長蔣萬安" src="../assets/photos/chiang-portrait-crop.jpg"></div>
+    <div class="intro-text">
+      <p class="kicker" id="introKicker">2026.10.08 臺北市政府記者會</p>
+      <h1 class="logo"><span>臺北</span><span class="gold">2033</span></h1>
+      <p class="tag">松機變身 AI 園區・沉浸式 3D 體驗</p>
+      <p class="lead" id="introBody"></p>
+      <blockquote id="introQuote"></blockquote>
+      <div class="load"><div class="bar"><i id="loadBar"></i></div><span id="loadText">載入 3D 臺北中…</span></div>
+      <div class="intro-actions">
+        <button id="btnStart" class="btn primary" disabled>▶ 開始任務</button>
+        <button id="btnTour" class="btn" disabled>🎬 看導覽動畫</button>
+        <a class="btn ghost" href="../index.html">← 回介紹網站</a>
+      </div>
+      <p class="fine">非官方粉絲作品。地圖 © OpenStreetMap 貢獻者；園區配置為依市府新聞稿繪製之示意，非正式設計圖。</p>
+    </div>
+  </div>
+</section>
+
+<!-- HUD -->
+<div id="hud" hidden>
+  <div id="mission" class="panel"><div class="m-title" id="mTitle"></div><div class="m-hint" id="mHint"></div><div class="m-prog" id="mProg"></div></div>
+  <div id="stats" class="panel">
+    <div class="year"><span id="yearNum">2026</span></div>
+    <div class="money" id="money">NT$ 0</div>
+    <div class="srow" id="srow"></div>
+  </div>
+  <div id="toolbar">
+    <button class="tb" id="tbYear" title="切換 2026 / 2033（Y）">🕰️ <b>2026⇄2033</b></button>
+    <button class="tb" id="tbMode" title="開車 / 空拍（F）">🚁 <b>空拍</b></button>
+    <button class="tb" id="tbTime" title="黃昏 / 夜晚 / 白天（N）">🌙 <b>夜晚</b></button>
+    <button class="tb" id="tbTour" title="導覽動畫（T）">🎬 <b>導覽</b></button>
+    <button class="tb" id="tbHelp" title="操作說明（H）">❓ <b>說明</b></button>
+    <a class="tb" href="../index.html" title="回介紹網站">🏠 <b>首頁</b></a>
+  </div>
+  <div id="radar"><canvas id="radarC" width="260" height="260"></canvas><span class="n">N</span></div>
+  <div id="speedo" class="panel"><b id="spd">0</b><small>km/h</small></div>
+  <div id="labels"></div>
+  <div id="caption" hidden></div>
+  <div id="banner" hidden><div class="b1" id="b1"></div><div class="b2" id="b2"></div></div>
+  <div id="toast" hidden></div>
+</div>
+
+<!-- touch controls -->
+<div id="touch" hidden>
+  <div id="stick"><div id="knob"></div></div>
+  <div id="tbtns">
+    <button id="tUp" class="tbtn">⬆︎</button>
+    <button id="tDown" class="tbtn">⬇︎</button>
+    <button id="tBoost" class="tbtn">⚡</button>
+  </div>
+</div>
+
+<!-- info card -->
+<section id="card" class="modal" hidden role="dialog" aria-modal="true">
+  <div class="card">
+    <div class="card-photo" id="cardPhotoWrap"><img id="cardPhoto" alt=""></div>
+    <div class="card-body">
+      <p class="kicker" id="cardKicker">檢查點</p>
+      <div class="card-big" id="cardBig"></div>
+      <h2 id="cardTitle"></h2>
+      <p id="cardText"></p>
+      <button class="btn primary" id="cardOk">繼續 ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- help -->
+<section id="help" class="modal" hidden>
+  <div class="card help">
+    <div class="card-body">
+      <h2>操作說明</h2>
+      <table>
+        <tr><th>開車</th><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 或方向鍵；<kbd>Shift</kbd> 加速；<kbd>空白</kbd> 煞車</td></tr>
+        <tr><th>空拍</th><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動；<kbd>E</kbd>/<kbd>Q</kbd> 上升/下降；拖曳滑鼠轉視角</td></tr>
+        <tr><th>視角</th><td>拖曳滑鼠旋轉、滾輪縮放</td></tr>
+        <tr><th>快捷鍵</th><td><kbd>Y</kbd> 年份 <kbd>F</kbd> 開車/空拍 <kbd>N</kbd> 日夜 <kbd>T</kbd> 導覽 <kbd>R</kbd> 回到道路</td></tr>
+        <tr><th>手機</th><td>左下搖桿控制方向；右側按鈕上升／下降／加速</td></tr>
+      </table>
+      <p class="fine">地圖資料：© OpenStreetMap 貢獻者（ODbL）。照片：Wikimedia Commons（作者與授權見介紹網站）。</p>
+      <button class="btn primary" id="helpOk">知道了</button>
+    </div>
+  </div>
+</section>
+
+<!-- finale -->
+<section id="finale" class="modal" hidden>
+  <div class="card finale">
+    <div class="card-photo"><img src="../assets/photos/chiang-stage.jpg" alt="臺北市長蔣萬安"></div>
+    <div class="card-body">
+      <p class="kicker gold">MISSION PASSED</p>
+      <h2 id="fTitle"></h2>
+      <p class="sub" id="fSub"></p>
+      <blockquote id="fBody"></blockquote>
+      <p class="fine" id="fNote"></p>
+      <div class="intro-actions">
+        <button class="btn primary" id="fFree">繼續自由探索</button>
+        <a class="btn" href="../transcript/">📜 記者會逐字稿</a>
+        <a class="btn" href="../index.html">🏠 回介紹網站</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<noscript><p style="padding:2em;font-size:22px">需要啟用 JavaScript 才能體驗 3D 臺北。</p></noscript>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

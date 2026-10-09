@@ -1,0 +1,27 @@
+name: fetch-osm-tiles
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/fetch-osm-tiles.yml']
+permissions:
+  contents: write
+concurrency: { group: fetch-osm-tiles, cancel-in-progress: false }
+jobs:
+  osm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - name: Fetch each part and commit it right away
+        run: |
+          for part in features buildings_0 buildings_1 buildings_2 buildings_3 buildings_4 buildings_5 buildings_6 buildings_7 buildings_8; do
+            git pull -q --rebase origin "$GITHUB_REF_NAME" || true
+            timeout 1500 python tools/fetch/osm.py "$part" || echo "part $part failed"
+            bash tools/fetch/commit.sh "chore(data): OpenStreetMap part $part" research/osm || true
+          done

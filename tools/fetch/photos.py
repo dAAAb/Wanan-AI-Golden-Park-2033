@@ -13,7 +13,7 @@ S = requests.Session(); S.headers.update(UA)
 
 GROUPS = {
     "chiang":   {"queries": ["Chiang Wan-an", "蔣萬安", "Wan-an Chiang"], "limit": 70},
-    "lee":      {"queries": ["李四川", "Lee Shih-chuan", "Li Szu-chuan"], "limit": 15},
+    "lee":      {"queries": ["李四川", "Lee Shih-chuan", "Li Szu-chuan", "Lee Szu-chuan", "Li Sih-chuan"], "limit": 25},
     "songshan": {"queries": ["Taipei Songshan Airport aerial", "松山機場", "Songshan Airport runway"], "limit": 25},
     "skyline":  {"queries": ["Taipei skyline night", "Taipei 101 skyline", "Taipei city aerial view"], "limit": 20},
     "park":     {"queries": ["Daan Forest Park aerial", "Dajia Riverside Park", "Keelung River Taipei"], "limit": 12},

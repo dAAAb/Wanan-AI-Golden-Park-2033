@@ -1,0 +1,15 @@
+# Wikimedia Commons file => local name (downloaded at <=1920px by fetch-photos workflow)
+File:蔣萬安市長.jpg => chiang-portrait.jpg
+File:蔣萬安市長 (cropped).jpg => chiang-portrait-crop.jpg
+File:Chiang Wan-an 20231108.jpg => chiang-council.jpg
+File:蔣萬安市府團隊正式接棒上任 01.jpg => chiang-speech.jpg
+File:Chiang Wan-an talking on the main stage 20221217a.jpg => chiang-stage.jpg
+File:Chiang Wan-an 20240106 01.jpg => chiang-rally.jpg
+File:Mayor of Taipei Chiang Wan-an 2024-09-20.jpg => chiang-podium.jpg
+File:蔣市長接見澳洲辦事處新任代表馮國斌 02.jpg => chiang-map.jpg
+File:蔣萬安市長與韓國駐臺代表李殷鎬相見歡 01.jpg => chiang-aerial.jpg
+File:李四川副市長.png => lee-shih-chuan.png
+File:'20210501 Taipei Night Skyline.jpg => taipei-skyline-dusk.jpg
+File:20221003 Taipei Night Skyline (cropped).jpg => taipei-skyline-night.jpg
+File:20150511 Taipei night skyline (2).jpg => taipei-skyline-blue.jpg
+File:2010 07 20690 6678 Da'an District, Taipei, Daan Park, Taiwan.JPG => daan-park.jpg

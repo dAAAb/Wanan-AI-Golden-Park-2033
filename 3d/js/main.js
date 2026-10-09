@@ -524,6 +524,7 @@ function updateTraffic(dt) {
 }
 
 // ---------------- player ----------------
+const START_DIST = 500;   // metres between the taxi's start and the terminal checkpoint
 function buildPlayer(D) {
   taxi = makeTaxi(); scene.add(taxi);
   // start on 敦化北路 heading north to the terminal, else south of the airport
@@ -535,18 +536,33 @@ function buildPlayer(D) {
     if (pts.length) {
       pts.sort((a, b) => b[1] - a[1]);           // southernmost first (z grows to the south)
       const southMost = pts[0]; const north = pts[pts.length - 1];
-      const target = [southMost[0] + (north[0] - southMost[0]) * 0.15, southMost[1] + (north[1] - southMost[1]) * 0.15];
+      // about half a kilometre short of the terminal on the road's axis, so 2033 is a short drive away
+      const k = Math.min(1, START_DIST / Math.hypot(southMost[0] - north[0], southMost[1] - north[1]));
+      const target = [north[0] + (southMost[0] - north[0]) * k, north[1] + (southMost[1] - north[1]) * k];
       // snap to the nearest real road vertex and face along the road towards the airport
       let bi = 0, bd2 = Infinity;
       pts.forEach((p, i) => { const d = (p[0] - target[0]) ** 2 + (p[1] - target[1]) ** 2; if (d < bd2) { bd2 = d; bi = i; } });
       start = pts[bi];
-      const ahead = pts.slice(bi + 1).find(p => p[1] < start[1] - 60) || north;   // pts are sorted south -> north
+      // face along the start vertex's own polyline, in whichever direction runs north
+      const seg = segs.find(r => r.pts.includes(start));
+      let ahead = null;
+      if (seg) {
+        const P = seg.pts, j = P.indexOf(start);
+        for (const st of [1, -1]) {
+          let k = j + st;
+          while (k >= 0 && k < P.length && Math.hypot(P[k][0] - start[0], P[k][1] - start[1]) < 30) k += st;
+          k = Math.max(0, Math.min(P.length - 1, k));
+          if (k !== j && (!ahead || P[k][1] < ahead[1])) ahead = P[k];
+        }
+        if (ahead && ahead[1] > start[1]) ahead = [2 * start[0] - ahead[0], 2 * start[1] - ahead[1]];   // only a southern neighbour: mirror it
+      }
+      if (!ahead) ahead = pts.slice(bi + 1).find(p => p[1] < start[1] - 60) || north;   // pts are sorted south -> north
       S.startHeading = Math.atan2(ahead[0] - start[0], ahead[1] - start[1]);
       path = pts.filter((p, i) => i % 3 === 0);
     }
   }
   if (!start) { const s = 0, t = 900; start = [R.c[0] + s * R.u[0] + t * R.n[0], R.c[1] + s * R.u[1] + t * R.n[1]]; }
-  S.startPath = path;
+  S.startPath = path.filter(p => p[1] <= start[1]);   // the stretch actually driven (billboards go here)
   S.car.x = start[0]; S.car.z = start[1]; S.car.h = S.startHeading ?? Math.PI; // facing north (-z) along the road
   S.start = start.slice();
   // terminal target: closest aerodrome-ish point near the end of 敦化北路, fallback south edge centre

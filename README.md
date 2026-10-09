@@ -4,6 +4,16 @@
 
 ## 公開連結
 
+**正式網址：https://ai2033.taipei/**（GitHub Pages，從 `claude/taipei-ai-park-interactive-wsso9d` 分支根目錄發布，網域在 Gandi，DNS 指向 GitHub Pages）
+
+| 內容 | 連結 |
+|---|---|
+| 🌐 大字版互動網站 | https://ai2033.taipei/ |
+| 🚕 3D 臺北 GTA 沉浸體驗 | https://ai2033.taipei/3d/ |
+| 📜 記者會逐字稿 | https://ai2033.taipei/transcript/ |
+| 📊 PPT 簡報（.pptx） | https://ai2033.taipei/slides/AI-Golden-Century-Taipei.pptx |
+| 📄 PDF 簡報 | https://ai2033.taipei/slides/AI-Golden-Century-Taipei.pdf |
+
 **Claude Artifacts 版（不需 githack）**
 
 | 內容 | 連結 |
@@ -26,12 +36,6 @@
 | 📄 PDF 簡報 | https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/slides/AI-Golden-Century-Taipei.pdf |
 
 > 這些連結透過 raw.githack.com 直接從本 repo 提供，推送後幾分鐘內就會更新。第一次打開網頁時，githack 會先顯示「One more step」提示頁，按紅色的 **Open the page** 就會進入網站。
->
-> **建議啟用 GitHub Pages（約 30 秒，網址更短、沒有提示頁）**：repo 的 Settings → Pages → Build and deployment → Source 選「Deploy from a branch」→ Branch 選 `claude/taipei-ai-park-interactive-wsso9d`、資料夾 `/ (root)` → Save。約 1 分鐘後即可使用：
-> - 網站：https://daaab.github.io/Wanan-AI-Golden-Park-2033/
-> - 3D：https://daaab.github.io/Wanan-AI-Golden-Park-2033/3d/
-> - 逐字稿：https://daaab.github.io/Wanan-AI-Golden-Park-2033/transcript/
-> - 簡報：https://daaab.github.io/Wanan-AI-Golden-Park-2033/slides/AI-Golden-Century-Taipei.pdf
 
 ## 結構
 

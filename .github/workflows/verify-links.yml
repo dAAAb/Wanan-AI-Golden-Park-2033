@@ -1,0 +1,17 @@
+name: verify-links
+on:
+  workflow_dispatch:
+  push:
+    paths: ['tools/verify/urls.txt', '.github/workflows/verify-links.yml']
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sleep 20
+          while read -r u; do
+            [ -z "$u" ] && continue
+            out=$(curl -s -L -o /tmp/body -w '%{http_code} %{content_type} %{size_download}' -m 60 "$u")
+            echo "RESULT $out $u"; head -c 120 /tmp/body | tr '\n' ' '; echo
+          done < tools/verify/urls.txt

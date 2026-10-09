@@ -1,0 +1,22 @@
+name: fetch-photos
+on:
+  workflow_dispatch:
+  push:
+    paths: ['tools/fetch/photos.py', 'tools/fetch/photo_picks.txt', '.github/workflows/fetch-photos.yml']
+permissions:
+  contents: write
+concurrency: { group: fetch-photos, cancel-in-progress: false }
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - run: python tools/fetch/photos.py
+      - run: bash tools/fetch/commit.sh "chore(assets): fetch Wikimedia Commons photos" research/candidates assets/photos

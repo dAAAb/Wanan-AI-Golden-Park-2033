@@ -1,0 +1,31 @@
+name: fetch-transcript
+on:
+  workflow_dispatch:
+  push:
+    paths: ['tools/fetch/youtube.sh', 'tools/fetch/transcribe.py', '.github/workflows/fetch-transcript.yml']
+permissions:
+  contents: write
+concurrency: { group: fetch-transcript, cancel-in-progress: false }
+jobs:
+  transcript:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: sudo apt-get update -y && sudo apt-get install -y ffmpeg
+      - run: pip install -U "yt-dlp[default,curl-cffi]" faster-whisper opencc-python-reimplemented
+      - run: bash tools/fetch/youtube.sh ircGbXWHRbQ
+      - run: bash tools/fetch/commit.sh "chore(transcript): video metadata and captions" research/youtube
+      - name: Transcribe
+        run: |
+          if [ -f /tmp/yt/audio16k.wav ]; then python tools/fetch/transcribe.py /tmp/yt/audio16k.wav; fi
+      - if: always()
+        run: bash tools/fetch/commit.sh "chore(transcript): whisper transcript of 2026-10-08 press conference" research/youtube

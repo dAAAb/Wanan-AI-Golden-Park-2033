@@ -1,0 +1,22 @@
+name: fetch-osm
+on:
+  workflow_dispatch:
+  push:
+    paths: ['tools/fetch/osm.py', '.github/workflows/fetch-osm.yml']
+permissions:
+  contents: write
+concurrency: { group: fetch-osm, cancel-in-progress: false }
+jobs:
+  osm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - run: python tools/fetch/osm.py
+      - run: bash tools/fetch/commit.sh "chore(data): fetch OpenStreetMap data around Songshan Airport" research/osm

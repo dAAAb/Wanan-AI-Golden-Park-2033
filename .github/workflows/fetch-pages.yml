@@ -1,0 +1,22 @@
+name: fetch-pages
+on:
+  workflow_dispatch:
+  push:
+    paths: ['tools/fetch/pages.py', '.github/workflows/fetch-pages.yml']
+permissions:
+  contents: write
+concurrency: { group: fetch-pages, cancel-in-progress: false }
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests trafilatura
+      - run: python tools/fetch/pages.py
+      - run: bash tools/fetch/commit.sh "chore(research): archive source pages" research/pages

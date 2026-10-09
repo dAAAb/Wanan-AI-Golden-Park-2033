@@ -107,20 +107,29 @@ blockquote{margin:12px 0;padding:12px 16px;border-left:5px solid var(--gold);bac
 @media (max-width:820px){
   :root{--fs:18px}
   .intro-grid{grid-template-columns:1fr;gap:18px}
-  .intro-photo{max-width:260px;margin:0 auto}
+  .intro-photo{max-width:240px;margin:0 auto}
   .intro-photo img{aspect-ratio:1/1}
   .card{grid-template-columns:1fr}
-  .card-photo img{min-height:0;max-height:220px}
-  #mission{right:16px;max-width:none;padding:10px 14px}
-  .m-title{font-size:20px}.m-hint{font-size:16px}
-  #stats{top:auto;bottom:250px;right:12px;min-width:0;padding:8px 12px}
-  .year{font-size:34px}.money{font-size:18px}.srow{display:none}
-  #radar{width:150px;height:150px;bottom:92px}
-  #speedo{bottom:92px;right:12px;display:none}
-  #toolbar{bottom:12px;gap:6px}
+  .card-photo img{min-height:0;max-height:170px}
+  .card-body{padding:18px 20px}
+  .card-big{font-size:44px}
+  .card-body h2{font-size:24px}
+  .card-body p{font-size:17px;line-height:1.65}
+  #mission{left:12px;right:134px;top:12px;max-width:none;padding:10px 12px}
+  .m-title{font-size:18px}.m-hint{font-size:15px;line-height:1.45}
+  #radar{left:auto;right:12px;top:12px;bottom:auto;width:112px;height:112px;border-width:3px}
+  #radar .n{width:20px;height:20px;line-height:20px;font-size:13px}
+  #stats{top:134px;right:12px;bottom:auto;min-width:0;padding:6px 12px}
+  .year{font-size:28px}.money{font-size:14px}.srow{display:none}
+  #speedo{display:none}
+  #toolbar{bottom:10px;gap:6px}
   .tb{padding:10px 11px;font-size:15px}
   .tb b{display:none}
-  .lbl{font-size:15px}.lbl.zone,.lbl.cp{font-size:16px}
-  #stick{bottom:255px}
-  #tbtns{bottom:260px}
+  .lbl{font-size:14px}.lbl.zone,.lbl.cp{font-size:15px}
+  #stick{left:16px;bottom:80px;width:136px;height:136px}
+  #knob{width:58px;height:58px;margin:-29px 0 0 -29px}
+  #tbtns{right:16px;bottom:80px;gap:10px}
+  .tbtn{width:62px;height:62px;font-size:26px}
+  #caption{bottom:240px;font-size:22px}
+  #toast{top:auto;bottom:240px}
 }

@@ -1096,4 +1096,6 @@ window.__api = {
   look(x, y, z, tx, ty, tz) { S.mode = 'still'; camera.position.set(x, y, z); camera.lookAt(tx, ty, tz); },
   hud(on) { $('hud').style.display = on ? '' : 'none'; $('intro').hidden = true; },
   R, zones: () => S.zoneCentres,
+  mission(i, cp = 0) { S.cpIndex = cp; setMission(i); },
+  target: () => currentTarget(),
 };

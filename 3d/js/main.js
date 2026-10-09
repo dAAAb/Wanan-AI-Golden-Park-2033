@@ -121,7 +121,7 @@ async function build() {
   // green
   const greenCols = [0x86ad5c, 0x4f7f3d, 0x9cc46e, 0x7fb069];
   const gr = D.green.map(g => flatToPts(g.c, sc));
-  const greenGeo = flatPolys(gr, 0.25, (c, k) => c.setHex(greenCols[D.green[k].k] || greenCols[0]).offsetHSL(0, 0, (Math.random() - 0.5) * 0.04));
+  const greenGeo = flatPolys(gr, 0.03, (c, k) => c.setHex(greenCols[D.green[k].k] || greenCols[0]).offsetHSL(0, 0, (Math.random() - 0.5) * 0.04));
   const greenMesh = new THREE.Mesh(greenGeo, new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }));
   greenMesh.receiveShadow = true; world.add(greenMesh);
   // scattered trees on wooded / park land
@@ -139,8 +139,8 @@ async function build() {
 
   // water
   waterRings = D.water.map(w => flatToPts(w, sc));
-  const waterMesh = new THREE.Mesh(flatPolys(waterRings, 0.45, c => c.set(0xffffff)), waterMaterial());
-  waterMesh.material.polygonOffset = true; waterMesh.material.polygonOffsetFactor = -2; waterMesh.material.polygonOffsetUnits = -4;
+  const waterMesh = new THREE.Mesh(flatPolys(waterRings, 0.05, c => c.set(0xffffff)), waterMaterial());
+  waterMesh.material.polygonOffset = true; waterMesh.material.polygonOffsetFactor = -1; waterMesh.material.polygonOffsetUnits = -4;
   world.add(waterMesh);
 
   setLoad(0.58, '畫出大街小巷…'); await frame();
@@ -151,10 +151,10 @@ async function build() {
   const ground_i = [], elev_i = [];
   rl.forEach((l, i) => (D.roads.e[i] ? elev_i : ground_i).push(i));
   roadLines = rl.map((l, i) => ({ pts: l, w: RW[D.roads.k[i]], k: D.roads.k[i], e: D.roads.e[i], n: D.roads.n[i] }));
-  const roadMat = patchRoadMaterial(new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }));
+  const roadMat = patchRoadMaterial(new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -12 }));
   // draw minor roads first so majors win
   const order = ground_i.slice().sort((a, b) => D.roads.k[b] - D.roads.k[a]);
-  const rgeo = ribbons(order.map(i => rl[i]), (k) => 0.6 + (13 - D.roads.k[order[k]]) * 0.02, (k) => RW[D.roads.k[order[k]]], (c, k) => c.setHex(RC[D.roads.k[order[k]]]));
+  const rgeo = ribbons(order.map(i => rl[i]), (k) => 0.08 + (13 - D.roads.k[order[k]]) * 0.004, (k) => RW[D.roads.k[order[k]]], (c, k) => c.setHex(RC[D.roads.k[order[k]]]));
   const roadMesh = new THREE.Mesh(rgeo, roadMat); roadMesh.receiveShadow = true; world.add(roadMesh);
   // elevated expressways with pillars
   if (elev_i.length) {
@@ -177,7 +177,7 @@ async function build() {
     const pm = new THREE.InstancedMesh(new THREE.BoxGeometry(2, 9, 2).translate(0, 4.5, 0), new THREE.MeshLambertMaterial({ color: 0xbab7ae }), pil.length);
     pil.forEach((p, i) => pm.setMatrixAt(i, new THREE.Matrix4().makeTranslation(p[0], 0, p[1]))); world.add(pm);
   }
-  if (railGr.length) world.add(new THREE.Mesh(ribbons(railGr, 0.7, () => 6, c => c.setHex(0x6b5d50)), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 })));
+  if (railGr.length) world.add(new THREE.Mesh(ribbons(railGr, 0.1, () => 6, c => c.setHex(0x6b5d50)), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -14 })));
 
   setLoad(0.66, `蓋 ${D.buildings.h.length.toLocaleString()} 棟房子…`); await frame();
   buildings = buildBuildings(D, QUALITY.buildings);
@@ -229,15 +229,15 @@ function addMountains() {
 function buildAirport(D) {
   const sc = D.scale;
   const ad = flatToPts(D.aerodrome, sc);
-  const grass = new THREE.Mesh(flatPolys([ad], 0.3, c => c.setHex(0x8fae66)), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -3 }));
+  const grass = new THREE.Mesh(flatPolys([ad], 0.035, c => c.setHex(0x8fae66)), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -3 }));
   grass.receiveShadow = true; airport.add(grass);
   const aprons = D.aero.apron.map(a => flatToPts(a, sc));
-  if (aprons.length) { const m = new THREE.Mesh(flatPolys(aprons, 0.5, c => c.setHex(0xa9aaa6)), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 })); m.receiveShadow = true; airport.add(m); }
+  if (aprons.length) { const m = new THREE.Mesh(flatPolys(aprons, 0.06, c => c.setHex(0xa9aaa6)), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -6 })); m.receiveShadow = true; airport.add(m); }
   const tw = D.aero.taxiway.map(t => flatToPts(t.line, sc));
-  if (tw.length) { const m = new THREE.Mesh(ribbons(tw, 0.62, k => D.aero.taxiway[k].w, c => c.setHex(0x55575a)), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 })); m.receiveShadow = true; airport.add(m); }
+  if (tw.length) { const m = new THREE.Mesh(ribbons(tw, 0.07, k => D.aero.taxiway[k].w, c => c.setHex(0x55575a)), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -8 })); m.receiveShadow = true; airport.add(m); }
   // runway from the derived centre line (robust whether OSM mapped it as area or line)
   const rwLine = [[R.a[0], R.a[1]], [R.b[0], R.b[1]]];
-  const rw = new THREE.Mesh(ribbons([rwLine], 0.75, () => R.w || 60, c => c.setHex(0x2c2e31)), patchRoadMaterial(new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -10 }), true));
+  const rw = new THREE.Mesh(ribbons([rwLine], 0.08, () => R.w || 60, c => c.setHex(0x2c2e31)), patchRoadMaterial(new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -10 }), true));
   rw.receiveShadow = true; airport.add(rw);
   // runway threshold bars & approach lights
   const bars = new THREE.InstancedMesh(new THREE.BoxGeometry(30, 0.2, 2.2), new THREE.MeshBasicMaterial({ color: 0xf2f2f2 }), 24);
@@ -245,7 +245,7 @@ function buildAirport(D) {
   for (const end of [-1, 1]) for (let i = 0; i < 12; i++) {
     const s = end * (R.L / 2 - 30), t = -26 + i * 4.7;
     const x = R.c[0] + s * R.u[0] + t * R.n[0], z = R.c[1] + s * R.u[1] + t * R.n[1];
-    m4.compose(new THREE.Vector3(x, 0.8, z), q, new THREE.Vector3(1, 1, 1)); bars.setMatrixAt(bi++, m4);
+    m4.compose(new THREE.Vector3(x, 0.12, z), q, new THREE.Vector3(1, 1, 1)); bars.setMatrixAt(bi++, m4);
   }
   airport.add(bars);
   const lightsGeo = new THREE.SphereGeometry(0.9, 6, 4);
@@ -279,20 +279,20 @@ function buildFuture(D) {
   const F = D.future, sc = D.scale;
   const park = flatToPts(F.park, sc), ai = flatToPts(F.ai, sc), live = flatToPts(F.live, sc);
   const extra = (F.aiExtra || []).map(a => flatToPts(a, sc));
-  const zoneGeo = flatPolys([park, ai, live, ...extra], 0.9, (c, k) => c.setHex([0x5da34f, 0xcfd4d6, 0xd9cdb6][k] ?? 0xcfd4d6));
-  const zoneMat = new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -12, transparent: true, opacity: 0 });
+  const zoneGeo = flatPolys([park, ai, live, ...extra], 0.14, (c, k) => c.setHex([0x5da34f, 0xcfd4d6, 0xd9cdb6][k] ?? 0xcfd4d6));
+  const zoneMat = new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -16, transparent: true, opacity: 0 });
   const zones = new THREE.Mesh(zoneGeo, zoneMat); zones.receiveShadow = true; future.add(zones);
   future.userData.fadeMats = [zoneMat];
   // meadow texture variation via a second translucent layer
   const lakes = F.lakes.map(l => flatToPts(l, sc));
-  const lakeMat = waterMaterial(); lakeMat.opacity = 0; lakeMat.polygonOffset = true; lakeMat.polygonOffsetFactor = -8; lakeMat.polygonOffsetUnits = -16;
-  future.add(new THREE.Mesh(flatPolys(lakes, 1.1, c => c.set(0xffffff)), lakeMat)); future.userData.fadeMats.push(lakeMat);
+  const lakeMat = waterMaterial(); lakeMat.opacity = 0; lakeMat.polygonOffset = true; lakeMat.polygonOffsetFactor = -1; lakeMat.polygonOffsetUnits = -18;
+  future.add(new THREE.Mesh(flatPolys(lakes, 0.16, c => c.set(0xffffff)), lakeMat)); future.userData.fadeMats.push(lakeMat);
   // promenade on the old runway + paths
   const spine = flatToPts(F.spine, sc);
-  const promMat = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0, polygonOffset: true, polygonOffsetFactor: -9, polygonOffsetUnits: -18 });
-  future.add(new THREE.Mesh(ribbons([spine], 1.2, () => 22, c => c.setHex(0xe8d7b5)), promMat));
+  const promMat = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -20 });
+  future.add(new THREE.Mesh(ribbons([spine], 0.18, () => 22, c => c.setHex(0xe8d7b5)), promMat));
   const paths = F.paths.map(p => flatToPts(p, sc));
-  future.add(new THREE.Mesh(ribbons(paths, 1.2, () => 5, c => c.setHex(0xe9dfc8)), promMat));
+  future.add(new THREE.Mesh(ribbons(paths, 0.18, () => 5, c => c.setHex(0xe9dfc8)), promMat));
   future.userData.fadeMats.push(promMat);
   // promenade lamps (glow at night)
   const lampPts = []; for (let i = 1; i < spine.length; i++) { const a = spine[i - 1], b = spine[i]; const d = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let s = 0; s < d; s += 40) lampPts.push([a[0] + (b[0] - a[0]) * s / d, a[1] + (b[1] - a[1]) * s / d]); }
@@ -340,19 +340,19 @@ function buildFuture(D) {
   future.add(aiTower);
 
   // metro XY lines (glowing ribbons) and stations
-  const metroMat = (col) => new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0, depthWrite: false });
+  const metroMat = (col) => new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -24 });
   const mx = metroMat(0x58d8ff), my = metroMat(0xff5aa5);
-  future.add(new THREE.Mesh(ribbons([flatToPts(F.metroX.map(v => v * sc), sc)], 2.0, () => 9, c => c.set(0xffffff)), mx));
-  future.add(new THREE.Mesh(ribbons([flatToPts(F.metroY.map(v => v * sc), sc)], 2.1, () => 9, c => c.set(0xffffff)), my));
+  future.add(new THREE.Mesh(ribbons([flatToPts(F.metroX.map(v => v * sc), sc)], 0.2, () => 9, c => c.set(0xffffff)), mx));
+  future.add(new THREE.Mesh(ribbons([flatToPts(F.metroY.map(v => v * sc), sc)], 0.21, () => 9, c => c.set(0xffffff)), my));
   future.userData.metroMats = [mx, my];
   const stMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x58d8ff, emissiveIntensity: 0.6 });
   F.stations.forEach(([x, z]) => { const s = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 9, 24), stMat); s.position.set(x, 4.5, z); future.add(s); });
   // new cross-river corridors & 民族東路 extension
   const corr = F.corridors.map(c => flatToPts(c.c.map(v => v * sc), sc)).concat([flatToPts(F.minzu.map(v => v * sc), sc)]);
-  const corrMat = patchRoadMaterial(new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0 }));
-  const corrMesh = new THREE.Mesh(ribbons(corr, 2.6, () => 24, c => c.setHex(0x3a3d42)), corrMat); future.add(corrMesh);
-  const edgeMat = new THREE.MeshBasicMaterial({ color: 0xffc83d, transparent: true, opacity: 0 });
-  future.add(new THREE.Mesh(ribbons(corr, 2.5, () => 27, c => c.set(0xffffff)), edgeMat));
+  const corrMat = patchRoadMaterial(new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -22 }));
+  const corrMesh = new THREE.Mesh(ribbons(corr, 0.19, () => 24, c => c.setHex(0x3a3d42)), corrMat); future.add(corrMesh);
+  const edgeMat = new THREE.MeshBasicMaterial({ color: 0xffc83d, transparent: true, opacity: 0, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -21 });
+  future.add(new THREE.Mesh(ribbons(corr, 0.185, () => 27, c => c.set(0xffffff)), edgeMat));
   future.userData.fadeMats.push(corrMat, edgeMat);
   future.userData.corridors = corr;
 
@@ -405,7 +405,7 @@ function updateTrees(t) {
     const fut = d[4] === 1;
     const k = fut ? THREE.MathUtils.smoothstep(t, 0.25 + (i % 97) / 97 * 0.5, 0.5 + (i % 97) / 97 * 0.5) : 1;
     const sc = d[2] / 8 * Math.max(0.0001, k);
-    _p.set(d[0], fut ? 1 : 0.3, d[1]); _q.setFromAxisAngle(_s.set(0, 1, 0), i); _s.set(sc, sc, sc);
+    _p.set(d[0], fut ? 0.15 : 0.05, d[1]); _q.setFromAxisAngle(_s.set(0, 1, 0), i); _s.set(sc, sc, sc);
     _m.compose(_p, _q, _s);
     trees.trunk.setMatrixAt(i, _m); trees[d.slot[0]].setMatrixAt(d.slot[1], _m);
   });
@@ -509,7 +509,7 @@ function updateTraffic(dt) {
     const x = _rp.x - dz * off, z = _rp.z + dx * off;
     const yaw = Math.atan2(dx, dz);
     _q.setFromAxisAngle(_s.set(0, 1, 0), yaw);
-    _m.compose(_p.set(x, 0.1, z), _q, _s.set(1, 1, 1));
+    _m.compose(_p.set(x, 0.15, z), _q, _s.set(1, 1, 1));
     carsMesh.setMatrixAt(i, _m); cabsMesh.setMatrixAt(i, _m);
   }
   carsMesh.instanceMatrix.needsUpdate = cabsMesh.instanceMatrix.needsUpdate = true;
@@ -558,7 +558,8 @@ function buildPlayer(D) {
 // ---------------- labels ----------------
 function addLabel(text, x, y, z, cls = '', opts = {}) {
   const el = document.createElement('div'); el.className = 'lbl ' + cls; el.textContent = text; $('labels').appendChild(el);
-  const L = { el, pos: new THREE.Vector3(x, y, z), max: opts.max ?? 5000, min: opts.min ?? 0, when: opts.when ?? 'both', vis: true };
+  const pri = { cp: 5, zone: 4, metro: 3, small: 1 }[cls] ?? 2;
+  const L = { el, pos: new THREE.Vector3(x, y, z), max: opts.max ?? 5000, min: opts.min ?? 0, when: opts.when ?? 'both', vis: false, pri };
   labelsList.push(L); return L;
 }
 function buildLabels(D) {
@@ -587,7 +588,7 @@ function buildLabels(D) {
   const river = waterRings.length ? nearestWaterPoint(pc) : [pc[0], pc[1] - 400];
   S.zoneCentres.river = river;
   S.zoneCentres.renewal = [R.c[0] - R.u[0] * (R.L / 2 + 700), R.c[1] - R.u[1] * (R.L / 2 + 700)];
-  S.cpLabel = addLabel('★ 檢查點', 0, 40, 0, 'cp', { max: 99999 }); S.cpLabel.el.style.display = 'none'; S.cpLabel.hidden = true;
+  S.cpLabel = addLabel('★ 檢查點', 0, 40, 0, 'cp', { max: 99999 }); S.cpLabel.hidden = true; S.cpLabel.vis = false;
 }
 function nearestWaterPoint(p) {
   let best = null, bd = Infinity;
@@ -599,21 +600,33 @@ function nearestWaterPoint(p) {
 }
 function updateLabels() {
   const w = innerWidth, h = innerHeight, fut = S.year > 0.5;
+  const cand = [];
   for (const L of labelsList) {
-    if (L.hidden) continue;
+    if (L.hidden) { if (L.vis) { L.el.style.display = 'none'; L.vis = false; } continue; }
     const okWhen = L.when === 'both' || (L.when === 'future') === fut;
     const d = camera.position.distanceTo(L.pos);
-    let show = okWhen && d < L.max && d > L.min;
-    if (show) {
+    let ok = okWhen && d < L.max && d > L.min;
+    if (ok) {
       tmpV.copy(L.pos).project(camera);
-      show = tmpV.z < 1 && Math.abs(tmpV.x) < 1.1 && Math.abs(tmpV.y) < 1.1;
-      if (show) {
-        const x = (tmpV.x * 0.5 + 0.5) * w, y = (-tmpV.y * 0.5 + 0.5) * h;
-        const s = THREE.MathUtils.clamp(1400 / d, 0.6, 1.15);
-        L.el.style.transform = `translate(${x}px,${y}px) translate(-50%,-100%) scale(${s.toFixed(3)})`;
-      }
+      ok = tmpV.z < 1 && Math.abs(tmpV.x) < 1.05 && Math.abs(tmpV.y) < 1.05;
+      if (ok) cand.push({ L, d, x: (tmpV.x * 0.5 + 0.5) * w, y: (-tmpV.y * 0.5 + 0.5) * h });
     }
-    if (show !== L.vis) { L.el.style.display = show ? '' : 'none'; L.vis = show; }
+    if (!ok && L.vis) { L.el.style.display = 'none'; L.vis = false; }
+  }
+  // most important first, then nearest; skip labels that would overlap one already placed
+  cand.sort((a, b) => b.L.pri - a.L.pri || a.d - b.d);
+  const placed = [];
+  let shown = 0;
+  for (const c of cand) {
+    const L = c.L;
+    if (!L.w) { L.el.style.display = 'block'; L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; L.vis = true; }
+    const sc = THREE.MathUtils.clamp(1400 / c.d, 0.6, 1.15);
+    const bw = L.w * sc, bh = L.h * sc, x0 = c.x - bw / 2, y0 = c.y - bh - 8 * sc;
+    const hit = shown >= 22 || placed.some(r => x0 < r[2] + 6 && x0 + bw > r[0] - 6 && y0 < r[3] + 4 && y0 + bh > r[1] - 4);
+    if (hit) { if (L.vis) { L.el.style.display = 'none'; L.vis = false; } continue; }
+    placed.push([x0, y0, x0 + bw, y0 + bh]); shown++;
+    L.el.style.transform = `translate(${c.x.toFixed(1)}px,${c.y.toFixed(1)}px) translate(-50%,-100%) scale(${sc.toFixed(3)})`;
+    if (!L.vis) { L.el.style.display = 'block'; L.vis = true; }
   }
 }
 
@@ -718,6 +731,7 @@ function showHelp() { $('help').hidden = false; }
 function startGame(tour) {
   $('intro').hidden = true; $('hud').hidden = false; if (isTouch) $('touch').hidden = false;
   S.mode = 'drive';
+  if (blocked(S.car.x, S.car.z)) resetCar();
   const c = S.car; camera.position.set(c.x - Math.sin(c.h) * 60, 40, c.z - Math.cos(c.h) * 60); // swoop in from above
   setMission(0);
   setTime(0);
@@ -741,10 +755,10 @@ function currentTarget() {
 function updateCheckpoint() {
   const t = currentTarget();
   checkpointMesh.visible = !!t;
-  if (S.cpLabel) { S.cpLabel.hidden = !t; S.cpLabel.el.style.display = t ? '' : 'none'; S.cpLabel.vis = !!t; }
+  if (S.cpLabel) { S.cpLabel.hidden = !t; if (!t) { S.cpLabel.el.style.display = 'none'; S.cpLabel.vis = false; } }
   if (!t) return;
   checkpointMesh.position.set(t.x, 3, t.z);
-  S.cpLabel.pos.set(t.x, 30, t.z); S.cpLabel.el.textContent = '★ ' + t.label;
+  S.cpLabel.pos.set(t.x, 30, t.z); S.cpLabel.el.textContent = '★ ' + t.label; S.cpLabel.w = 0;
 }
 function checkMission() {
   const t = currentTarget(); if (!t) return;
@@ -801,17 +815,18 @@ function setTime(m) {
 function toggleMode() {
   if (S.mode === 'tour') endTour();
   if (S.mode === 'drive') {
-    S.mode = 'drone'; S.drone.pos.set(S.car.x, 160, S.car.z + 60); S.drone.yaw = S.car.h; S.drone.pitch = -0.55;
+    S.mode = 'drone'; S.drone.pos.set(S.car.x - Math.sin(S.car.h) * 45, 180, S.car.z - Math.cos(S.car.h) * 45); S.drone.yaw = S.car.h + Math.PI; S.drone.pitch = -0.7;
+    S.blend = 0; S.blendFrom = camera.position.clone(); S.blendQ = camera.quaternion.clone();
     $('tbMode').innerHTML = '🚕 <b>開車</b>'; toast('空拍模式：WASD 移動、E/Q 升降、拖曳轉視角');
   } else {
-    S.mode = 'drive'; $('tbMode').innerHTML = '🚁 <b>空拍</b>';
+    S.mode = 'drive'; $('tbMode').innerHTML = '🚁 <b>空拍</b>'; S.look = null;
     if (blocked(S.car.x, S.car.z)) resetCar();
   }
 }
 function resetCar() {
-  // put the car on the nearest major road point
+  // put the car on the nearest major-road point that is not inside a building
   let best = null, bd = Infinity;
-  for (const r of trafficRoads) for (const p of r.pts) { const d = Math.hypot(p[0] - S.car.x, p[1] - S.car.z); if (d < bd) { bd = d; best = p; } }
+  for (const r of trafficRoads) for (const p of r.pts) { const d = Math.hypot(p[0] - S.car.x, p[1] - S.car.z); if (d < bd && !blocked(p[0], p[1])) { bd = d; best = p; } }
   if (best) { S.car.x = best[0]; S.car.z = best[1]; S.car.v = 0; }
 }
 
@@ -886,12 +901,13 @@ function updateCar(dt) {
   c.steer += (st - c.steer) * Math.min(1, dt * 8);
   c.h += c.steer * dt * 1.9 * THREE.MathUtils.clamp(c.v / 9, -1, 1);
   const nx = c.x + Math.sin(c.h) * c.v * dt, nz = c.z + Math.cos(c.h) * c.v * dt;
-  if (blocked(nx, nz)) {
+  const stuck = blocked(c.x, c.z);   // never trap the car if it is already inside a footprint
+  if (!stuck && blocked(nx, nz)) {
     if (Math.abs(c.v) > 12) toast('碰！小心駕駛 🚧', 1200);
     c.v *= -0.25;
     if (!blocked(nx, c.z)) c.x = nx; else if (!blocked(c.x, nz)) c.z = nz;
   } else { c.x = nx; c.z = nz; }
-  taxi.position.set(c.x, 0.05, c.z); taxi.rotation.y = c.h;
+  taxi.position.set(c.x, 0.2, c.z); taxi.rotation.y = c.h;
   taxi.rotation.z = -c.steer * Math.min(1, Math.abs(c.v) / 30) * 0.05;
   for (const w of taxi.userData.wheels) w.rotation.x += c.v * dt / 0.36;
   $('spd').textContent = Math.round(Math.abs(c.v) * 3.6);
@@ -900,8 +916,11 @@ function updateCar(dt) {
   const yaw = c.h + Math.PI + S.cam.yaw, dist = S.cam.dist + Math.abs(c.v) * 0.12;
   tmpV.set(c.x + Math.sin(yaw) * dist * Math.cos(S.cam.pitch), 2 + dist * Math.sin(S.cam.pitch), c.z + Math.cos(yaw) * dist * Math.cos(S.cam.pitch));
   camera.position.lerp(tmpV, 1 - Math.pow(0.0005, dt));
-  camera.lookAt(c.x, 2.2, c.z);
+  if (!S.look) S.look = new THREE.Vector3(c.x, 2.2, c.z);
+  S.look.lerp(tmpV2.set(c.x, 2.2, c.z), 1 - Math.pow(0.00002, dt));
+  camera.lookAt(S.look);
 }
+const _qd = new THREE.Quaternion(), _ed = new THREE.Euler();
 function updateDrone(dt) {
   const k = S.keys, d = S.drone;
   const sp = (k.ShiftLeft || S.boost ? 3 : 1) * Math.max(40, d.pos.y * 0.9);
@@ -912,8 +931,12 @@ function updateDrone(dt) {
   d.pos.x += (-Math.sin(d.yaw) * f + Math.cos(d.yaw) * r) * sp * dt;
   d.pos.z += (-Math.cos(d.yaw) * f - Math.sin(d.yaw) * r) * sp * dt;
   d.pos.y = THREE.MathUtils.clamp(d.pos.y + u * sp * dt, 6, 3500);
-  camera.position.copy(d.pos);
-  camera.rotation.set(d.pitch, d.yaw, 0, 'YXZ');
+  _qd.setFromEuler(_ed.set(d.pitch, d.yaw, 0, 'YXZ'));
+  if (S.blend !== undefined && S.blend < 1) {
+    S.blend = Math.min(1, S.blend + dt / 1.2); const k = THREE.MathUtils.smootherstep(S.blend, 0, 1);
+    camera.position.lerpVectors(S.blendFrom, d.pos, k); camera.position.y = THREE.MathUtils.lerp(S.blendFrom.y, d.pos.y, Math.sqrt(k));  // rise first, so the camera clears rooftops
+    camera.quaternion.slerpQuaternions(S.blendQ, _qd, k);
+  } else { camera.position.copy(d.pos); camera.quaternion.copy(_qd); }
   $('spd').textContent = Math.round(sp * Math.min(1, Math.hypot(f, r)) * 3.6);
 }
 function updatePlanes(t) {
@@ -946,7 +969,7 @@ function updateFutureLife(dt, t) {
       const P = d.path; const idx = d.s * (P.length - 1); const a = P[Math.floor(idx)], b = P[Math.min(P.length - 1, Math.floor(idx) + 1)]; const f = idx % 1;
       const x = a[0] + (b[0] - a[0]) * f + R.n[0] * d.off, z = a[1] + (b[1] - a[1]) * f + R.n[1] * d.off;
       const k = Math.max(0.001, THREE.MathUtils.smoothstep(S.year, 0.8, 1));
-      _m.compose(_p.set(x, 1.2, z), _q.identity(), _s.set(k, k, k)); ppl.setMatrixAt(i, _m);
+      _m.compose(_p.set(x, 0.2, z), _q.identity(), _s.set(k, k, k)); ppl.setMatrixAt(i, _m);
     });
     ppl.instanceMatrix.needsUpdate = true;
   }
@@ -1004,7 +1027,17 @@ function updateEnvironment(dt) {
   if (future.userData.lampMat) future.userData.lampMat.emissiveIntensity = 0.2 + n * 2.5;
   if (future.userData.crownMat) future.userData.crownMat.emissiveIntensity = 0.6 + n * 2.2;
   // shadow camera follows the view focus
-  const fx = S.mode === 'drive' ? S.car.x : camera.position.x, fz = S.mode === 'drive' ? S.car.z : camera.position.z;
+  const alt = Math.max(1, camera.position.y);
+  const near = THREE.MathUtils.clamp(alt * 0.04, 1, 30);
+  if (Math.abs(camera.near - near) > 0.25) { camera.near = near; camera.updateProjectionMatrix(); }
+  let fx, fz;
+  if (S.mode === 'drive') { fx = S.car.x; fz = S.car.z; }
+  else { camera.getWorldDirection(tmpV2); const tt = Math.min(2000, alt / Math.max(0.2, -tmpV2.y)); fx = camera.position.x + tmpV2.x * tt; fz = camera.position.z + tmpV2.z * tt; }
+  const ext = THREE.MathUtils.clamp(alt * 1.6, 420, 2400);
+  const sc = dir.shadow.camera;
+  if (Math.abs(sc.right - ext) > ext * 0.15) { sc.left = sc.bottom = -ext; sc.right = sc.top = ext; sc.updateProjectionMatrix(); }
+  const texel = (2 * sc.right) / dir.shadow.mapSize.x * 4;
+  fx = Math.round(fx / texel) * texel; fz = Math.round(fz / texel) * texel;
   dir.position.set(fx + sun.x * 1500, Math.max(200, sun.y * 1500), fz + sun.z * 1500); dir.target.position.set(fx, 0, fz);
   // money counter
   S.money += (S.moneyTarget - S.money) * Math.min(1, dt * 2);
@@ -1086,7 +1119,7 @@ function loop() {
     if (ferris) ferris.userData.wheel.rotation.z = t * 0.05;
     if (checkpointMesh.visible) { checkpointMesh.rotation.y = t; checkpointMesh.scale.setScalar(1 + Math.sin(t * 4) * 0.05); }
     taxi.visible = S.mode !== 'drone' && S.mode !== 'tour' && S.mode !== 'cutscene' || S.mode === 'intro';
-    if (t - lastLabel > 0.033) { updateLabels(); lastLabel = t; }
+    updateLabels();
     if (S.mode !== 'intro') updateRadar();
   }
   if (composer) composer.render(); else renderer.render(scene, camera);
@@ -1109,4 +1142,7 @@ window.__api = {
   R, zones: () => S.zoneCentres,
   mission(i, cp = 0) { S.cpIndex = cp; setMission(i); },
   target: () => currentTarget(),
+  blocked: (x, z) => blocked(x, z),
+  wheelColor(c) { taxi.userData.wheels.forEach(w => { w.material = w.material.clone(); w.material.color.setHex(c); }); },
+  step(n, dt, keys) { Object.assign(S.keys, keys || {}); for (let i = 0; i < n; i++) updateCar(dt); S.keys = {}; return { ...S.car }; },
 };

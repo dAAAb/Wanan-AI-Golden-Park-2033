@@ -103,7 +103,7 @@ export function patchBuildingMaterial(mat, { instanced = false, glass = false } 
     sh.uniforms.uT = U.uT; sh.uniforms.uNight = U.uNight; sh.uniforms.uTime = U.uTime;
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
-        uniform float uT; varying vec2 vWin; varying float vRoof; varying float vSeed;
+        uniform float uT; varying vec2 vWin; varying float vRoof; varying float vSeed; varying float vDistB;
         ${instanced ? 'attribute vec3 aI;' : 'attribute float aWin; attribute vec4 aB;'}`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>
         ${instanced ? `
@@ -120,9 +120,10 @@ export function patchBuildingMaterial(mat, { instanced = false, glass = false } 
           vRoof = step(0.5, normal.y);
           vSeed = aB.z / 255.0;
         `}`);
+    sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nvDistB = -mvPosition.z;');
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
-        uniform float uNight; uniform float uTime; varying vec2 vWin; varying float vRoof; varying float vSeed; ${WINDOW_GLSL}`)
+        uniform float uNight; uniform float uTime; varying vec2 vWin; varying float vRoof; varying float vSeed; varying float vDistB; ${WINDOW_GLSL}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         float winMask = 0.0; float winRnd = 0.0;
         if (vRoof < 0.5) {
@@ -130,7 +131,7 @@ export function patchBuildingMaterial(mat, { instanced = false, glass = false } 
           vec2 f = fract(cell); vec2 id = floor(cell);
           winMask = step(${glass ? '0.06' : '0.2'}, f.x) * step(f.x, ${glass ? '0.94' : '0.8'}) * step(0.22, f.y) * step(f.y, 0.86) * step(0.0, cell.y);
           winRnd = whash(id + vec2(vSeed * 91.7, vSeed * 13.3));
-          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.42 + vec3(0.06, 0.1, 0.16), winMask * ${glass ? '0.75' : '0.7'});
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.42 + vec3(0.06, 0.1, 0.16), winMask * ${glass ? '0.75' : '0.7'} * smoothstep(2600.0, 900.0, vDistB));
         }`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         float lit = winMask * step(${glass ? '0.35' : '0.5'}, winRnd) * uNight;
@@ -161,12 +162,14 @@ export function patchRoadMaterial(mat, runway = false) {
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uNight = U.uNight;
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute vec3 aRoad; varying vec3 vRoad;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRoad = aRoad;');
+      .replace('#include <common>', '#include <common>\nattribute vec3 aRoad; varying vec3 vRoad; varying float vDist;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRoad = aRoad;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\nvDist = -mvPosition.z;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uNight; varying vec3 vRoad;')
+      .replace('#include <common>', '#include <common>\nuniform float uNight; varying vec3 vRoad; varying float vDist;')
       .replace('#include <color_fragment>', `#include <color_fragment>
         float w = vRoad.z; float a = vRoad.y; float s = vRoad.x;
+        float near = smoothstep(${runway ? '1800.0' : '420.0'}, ${runway ? '600.0' : '160.0'}, vDist);
         float edge = (step(a, 0.6 / w) + step(1.0 - 0.6 / w, a)) * step(9.0, w);
         float lanes = floor(w / 3.4);
         float lane = abs(fract(a * lanes) - 0.5);
@@ -174,11 +177,11 @@ export function patchRoadMaterial(mat, runway = false) {
         ${runway ? `
           float centre = step(abs(a - 0.5), 0.012) * step(0.45, fract(s / 60.0));
           float thr = (step(s, 60.0) + step(vRoad.x, 0.0)) * step(0.5, fract(a * 12.0));
-          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.95), clamp(centre + edge + thr * 0.0, 0.0, 1.0));
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.95), clamp(centre + edge, 0.0, 1.0) * near);
         ` : `
           float yellow = step(abs(a - 0.5), 0.35 / w) * step(14.0, w);
-          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.92), clamp(edge * 0.8 + dash * 0.9, 0.0, 1.0));
-          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.95, 0.75, 0.2), yellow);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.92), clamp(edge * 0.8 + dash * 0.9, 0.0, 1.0) * near);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.95, 0.75, 0.2), yellow * near);
         `}`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance += uNight * vec3(0.10, 0.075, 0.04) * smoothstep(0.0, 0.5, 1.0 - abs(a - 0.5) * 2.0) * step(9.0, w);`);
@@ -321,7 +324,8 @@ export function makeTaxi() {
   const g = new THREE.Group();
   const yellow = new THREE.MeshStandardMaterial({ color: 0xffc400, roughness: 0.35, metalness: 0.25 });
   const glass = new THREE.MeshStandardMaterial({ color: 0x1b2633, roughness: 0.1, metalness: 0.6 });
-  const black = new THREE.MeshLambertMaterial({ color: 0x15171a });
+  const black = new THREE.MeshLambertMaterial({ color: 0x2b2e33 });
+  const silver = new THREE.MeshStandardMaterial({ color: 0xd9dde2, metalness: 0.8, roughness: 0.25 });
   const body = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.75, 4.5), yellow); body.position.y = 0.75; g.add(body);
   const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.62, 2.4), glass); cabin.position.set(0, 1.42, -0.15); g.add(cabin);
   const roof = new THREE.Mesh(new THREE.BoxGeometry(1.72, 0.08, 2.0), yellow); roof.position.set(0, 1.76, -0.15); g.add(roof);
@@ -329,7 +333,8 @@ export function makeTaxi() {
   const sign = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.28, 0.3), signMat); sign.position.set(0, 1.94, -0.1); g.add(sign);
   const wheels = [];
   for (const [x, z] of [[-0.95, 1.45], [0.95, 1.45], [-0.95, -1.45], [0.95, -1.45]]) {
-    const w = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.28, 12), black); w.rotation.z = Math.PI / 2; w.position.set(x, 0.38, z); g.add(w); wheels.push(w);
+    const w = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.28, 14), black); w.rotation.z = Math.PI / 2; w.position.set(x, 0.38, z); g.add(w); wheels.push(w);
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.04, 12), silver); hub.position.y = -Math.sign(x) * 0.15; w.add(hub);  // outer face (wheel is rotated 90° about z)
   }
   const hl = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2c0, emissiveIntensity: 0.3 });
   for (const x of [-0.65, 0.65]) { const l = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.18, 0.05), hl); l.position.set(x, 0.85, 2.26); g.add(l); }

@@ -68,7 +68,27 @@ const pill = (slide, text, x, y, w, h, o = {}) => {
   slide.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w, h, rectRadius: Math.min(0.22, h / 2), fill: { color: o.fill || C.accent1 }, line: { type: 'none' }, objectName: o.name || 'pill' });
   T(slide, text, { x: x + 0.2, y, w: w - 0.4, h, valign: 'middle', fontSize: o.fontSize || 18, bold: true, color: o.color || C.text1, align: o.align || 'left' });
 };
-const img = (slide, file, x, y, w, h, o = {}) => slide.addImage({ path: P(file), x, y, w, h, sizing: { type: 'cover', w, h }, altText: o.alt || '', objectName: o.name || 'image' });
+// native pixel size of a JPEG/PNG (pptxgenjs needs the real aspect ratio to crop without distortion)
+function pixelSize(file) {
+  const b = require('fs').readFileSync(file);
+  if (b[0] === 0x89 && b[1] === 0x50) return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  let i = 2;
+  while (i < b.length) {
+    if (b[i] !== 0xff) { i++; continue; }
+    const m = b[i + 1], len = b.readUInt16BE(i + 2);
+    if (m >= 0xc0 && m <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(m)) return { w: b.readUInt16BE(i + 7), h: b.readUInt16BE(i + 5) };
+    i += 2 + len;
+  }
+  throw new Error('cannot read size of ' + file);
+}
+// Fill a w×h frame like CSS object-fit: cover. fy = vertical focus (0 top … 1 bottom), keeps faces in frame.
+const img = (slide, file, x, y, w, h, o = {}) => {
+  const { w: pw, h: ph } = pixelSize(P(file));
+  const r = pw / ph, fx = o.fx ?? 0.5, fy = o.fy ?? (o.person ? 0.2 : 0.5);
+  let iw, ih, cx = 0, cy = 0;
+  if (r > w / h) { ih = h; iw = h * r; cx = (iw - w) * fx; } else { iw = w; ih = w / r; cy = (ih - h) * fy; }
+  return slide.addImage({ path: P(file), x, y, w: iw, h: ih, sizing: { type: 'crop', x: cx, y: cy, w, h }, altText: o.alt || '', objectName: o.name || 'image' });
+};
 const card = (slide, x, y, w, h, fill, name) => slide.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w, h, rectRadius: 0.15, fill: { color: fill }, line: { type: 'none' }, objectName: name || 'card' });
 const stat = (slide, x, y, w, big, label, color, dark) => {
   T(slide, big, { x, y, w, h: 0.95, fontSize: 54, bold: true, color: color || C.text1, valign: 'bottom' });
@@ -82,7 +102,7 @@ const circleIcon = (slide, x, y, d, glyph, fill, color) => {
 // ---------- 1. title ----------
 pres.addSection({ title: '開場' });
 let s = pres.addSlide({ masterName: 'TITLE_DARK', sectionTitle: '開場' });
-img(s, 'assets/photos/chiang-portrait.jpg', 8.55, 0, 4.783, 7.5, { alt: '臺北市長蔣萬安正式肖像', name: 'hero-photo' });
+img(s, 'assets/photos/chiang-portrait.jpg', 8.55, 0, 4.783, 7.5, { person: true, alt: '臺北市長蔣萬安正式肖像', name: 'hero-photo' });
 T(s, '2026.10.08 臺北市政府記者會', { x: 0.6, y: 0.65, w: 7, h: 0.45, fontSize: 18, bold: true, color: C.accent1 });
 s.addText([{ text: 'AI黃金世紀，', options: { breakLine: true } }, { text: '從臺北開始！', options: { color: C.accent1 } }], { placeholder: 'title' });
 s.addText('松山機場遷移・打造 300 公頃「臺北AI園區」', { placeholder: 'body' });
@@ -113,7 +133,7 @@ why.forEach(([g, h, b], i) => {
   T(s, h, { x: 1.6, y: y - 0.02, w: 5.6, h: 0.42, fontSize: 20, bold: true });
   T(s, b, { x: 1.6, y: y + 0.42, w: 5.6, h: 0.6, fontSize: 15, color: C.text2 });
 });
-img(s, 'assets/photos/chiang-speech.jpg', 7.6, 1.5, 5.13, 3.4, { alt: '蔣萬安致詞', name: 'photo' });
+img(s, 'assets/photos/chiang-speech.jpg', 7.6, 1.5, 5.13, 3.4, { person: true, alt: '蔣萬安致詞', name: 'photo' });
 card(s, 7.6, 5.05, 5.13, 1.65, C.text1, 'quote-card');
 T(s, '「沒有腹地，『亞太AI首都』就只是空談。」', { x: 7.85, y: 5.2, w: 4.7, h: 1.0, fontSize: 20, bold: true, color: C.background1, valign: 'middle' });
 T(s, '— 臺北市長 蔣萬安', { x: 7.85, y: 6.2, w: 4.7, h: 0.35, fontSize: 14, bold: true, color: C.accent1 });
@@ -249,9 +269,9 @@ s.addNotes('首都科技廊帶串聯新北、桃園、基隆、宜蘭、新竹�
 pres.addSection({ title: '大台北新矽谷' });
 s = pres.addSlide({ masterName: 'CONTENT_DARK', sectionTitle: '大台北新矽谷' });
 s.addText([{ text: '蔣萬安 ＋ 李四川 ＝ ' }, { text: '大台北新矽谷', options: { color: C.accent1 } }], { placeholder: 'title' });
-img(s, 'assets/photos/chiang-stage.jpg', 0.6, 1.55, 2.9, 3.5, { alt: '臺北市長蔣萬安', name: 'photo-chiang' });
+img(s, 'assets/photos/chiang-stage.jpg', 0.6, 1.55, 2.9, 3.5, { person: true, alt: '臺北市長蔣萬安', name: 'photo-chiang' });
 T(s, '＋', { x: 3.55, y: 2.7, w: 0.8, h: 1.0, fontSize: 48, bold: true, color: C.accent1, align: 'center' });
-img(s, 'assets/photos/lee-shih-chuan.jpg', 4.4, 1.55, 2.9, 3.5, { alt: '李四川', name: 'photo-lee' });
+img(s, 'assets/photos/lee-shih-chuan.jpg', 4.4, 1.55, 2.9, 3.5, { person: true, alt: '李四川', name: 'photo-lee' });
 T(s, '蔣萬安', { x: 0.6, y: 5.15, w: 2.9, h: 0.45, fontSize: 20, bold: true, color: C.accent1 });
 T(s, '臺北市長・臺北AI園區', { x: 0.6, y: 5.6, w: 2.9, h: 0.4, fontSize: 14, color: C.background1 });
 T(s, '李四川', { x: 4.4, y: 5.15, w: 2.9, h: 0.45, fontSize: 20, bold: true, color: C.accent1 });
@@ -295,7 +315,7 @@ s.addNotes('網站提供 GTA 風格的 3D 臺北體驗、大字版重點整理�
 
 // ---------- 15. closing ----------
 s = pres.addSlide({ masterName: 'CLOSING_DARK', sectionTitle: '體驗與結語' });
-img(s, 'assets/photos/chiang-stage.jpg', 8.55, 0, 4.783, 7.5, { alt: '臺北市長蔣萬安', name: 'closing-photo' });
+img(s, 'assets/photos/chiang-stage.jpg', 8.55, 0, 4.783, 7.5, { person: true, alt: '臺北市長蔣萬安', name: 'closing-photo' });
 T(s, '「我的第一個任期，成功爭取輝達進駐；我的第二個任期，要抓住 AI 這樣的歷史性機遇，為臺灣開創新的『AI黃金世紀』。」', { x: 0.6, y: 1.0, w: 7.5, h: 2.6, fontSize: 26, bold: true, color: C.background1 });
 T(s, '— 臺北市長 蔣萬安', { x: 0.6, y: 3.65, w: 7.5, h: 0.45, fontSize: 18, bold: true, color: C.accent1 });
 s.addText([{ text: 'AI黃金世紀，', options: { breakLine: true } }, { text: '從臺北開始！', options: { color: C.accent1 } }], { placeholder: 'title' });

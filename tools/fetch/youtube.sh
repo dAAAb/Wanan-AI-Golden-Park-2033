@@ -1,23 +1,85 @@
 #!/usr/bin/env bash
-# Fetch metadata, captions and audio for the 2026-10-08 press conference video.
+# Fetch audio (and captions if any) for the 2026-10-08 press conference video.
+# YouTube bot-checks datacenter IPs, so try public Invidious/Piped mirrors, then yt-dlp (+PO token provider).
 set -u
 VID="${1:-ircGbXWHRbQ}"
 OUT=research/youtube
 mkdir -p "$OUT" /tmp/yt
 URL="https://www.youtube.com/watch?v=$VID"
-CLIENTS=("default" "default,-web" "tv_simply" "mweb" "web_safari" "android_vr" "tv" "ios" "web_embedded")
-for c in "${CLIENTS[@]}"; do
-  echo "== metadata/subs with client $c"
-  yt-dlp --skip-download --write-info-json --write-description --write-subs --write-auto-subs \
-    --sub-langs "zh.*,zh,en,en-orig" --sub-format "json3/vtt/best" \
-    --extractor-args "youtube:player_client=$c" -o "$OUT/%(id)s.%(ext)s" "$URL" && break
+log() { echo "$*" | tee -a "$OUT/fetch_log.txt"; }
+: > "$OUT/fetch_log.txt"
+
+have_audio() { ls /tmp/yt/audio.* >/dev/null 2>&1 && [ "$(stat -c %s $(ls /tmp/yt/audio.* | head -1))" -gt 500000 ]; }
+
+# 1) Invidious mirrors
+INV=$(curl -s -m 30 "https://api.invidious.io/instances.json?sort_by=health" | python3 -c "
+import json,sys
+try:
+  d=json.load(sys.stdin)
+  print(' '.join('https://'+n for n,i in d if i.get('type')=='https' and i.get('api')))
+except Exception: pass")
+INV="$INV https://inv.nadeko.net https://yewtu.be https://invidious.nerdvpn.de https://iv.ggtyler.dev https://invidious.f5.si https://inv.tux.pizza https://invidious.privacyredirect.com https://iv.melmac.space https://invidious.jing.rocks"
+for inst in $INV; do
+  have_audio && break
+  log "== invidious $inst"
+  curl -s -m 40 "$inst/api/v1/videos/$VID?local=true" -o /tmp/yt/inv.json || continue
+  python3 - "$inst" <<'PY' > /tmp/yt/inv_url.txt 2>>"$OUT/fetch_log.txt"
+import json,sys
+inst=sys.argv[1]
+d=json.load(open('/tmp/yt/inv.json'))
+if 'error' in d: print('', end=''); sys.stderr.write('inv error: '+str(d.get('error'))[:200]+'\n'); sys.exit()
+json.dump({k:d.get(k) for k in ('title','author','published','lengthSeconds','description','captions')}, open('research/youtube/meta_invidious.json','w'), ensure_ascii=False, indent=1)
+fm=[f for f in d.get('adaptiveFormats',[]) if f.get('type','').startswith('audio')]
+fm.sort(key=lambda f: (('mp4' in f.get('type','')), int(f.get('bitrate',0) or 0)), reverse=True)
+if fm:
+  u=fm[0]['url']; print(u if u.startswith('http') else inst+u)
+PY
+  U=$(cat /tmp/yt/inv_url.txt)
+  [ -n "$U" ] || continue
+  log "   audio url found, downloading"
+  curl -sL -m 1800 --retry 3 "$U" -o /tmp/yt/audio.m4a || rm -f /tmp/yt/audio.m4a
+  have_audio || { log "   download too small/failed"; rm -f /tmp/yt/audio.*; }
 done
-for c in "${CLIENTS[@]}"; do
-  echo "== audio with client $c"
-  if yt-dlp -f "bestaudio/best" --extractor-args "youtube:player_client=$c" -o "/tmp/yt/audio.%(ext)s" "$URL"; then break; fi
-done
+
+# 2) Piped mirrors
+if ! have_audio; then
+  PIPED=$(curl -s -m 30 "https://piped-instances.kavin.rocks/" | python3 -c "
+import json,sys
+try: print(' '.join(i['api_url'] for i in json.load(sys.stdin)))
+except Exception: pass")
+  PIPED="$PIPED https://pipedapi.kavin.rocks https://api.piped.private.coffee https://pipedapi.adminforge.de https://pipedapi.r4fo.com"
+  for api in $PIPED; do
+    have_audio && break
+    log "== piped $api"
+    curl -s -m 40 "$api/streams/$VID" -o /tmp/yt/piped.json || continue
+    U=$(python3 -c "
+import json
+try:
+  d=json.load(open('/tmp/yt/piped.json'))
+  a=sorted(d.get('audioStreams',[]), key=lambda s:(s.get('mimeType','').find('mp4')>=0, s.get('bitrate',0)), reverse=True)
+  print(a[0]['url'] if a else '')
+except Exception as e: print('')")
+    [ -n "$U" ] || continue
+    log "   audio url found"
+    curl -sL -m 1800 --retry 3 "$U" -o /tmp/yt/audio.m4a || rm -f /tmp/yt/audio.m4a
+    have_audio || { log "   download too small/failed"; rm -f /tmp/yt/audio.*; }
+  done
+fi
+
+# 3) yt-dlp with PO-token provider (bgutil)
+if ! have_audio; then
+  log "== yt-dlp + bgutil POT provider"
+  pip install -q -U bgutil-ytdlp-pot-provider >/dev/null 2>&1 || true
+  (git clone -q --depth 1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git /tmp/bgutil && cd /tmp/bgutil/server && (npm ci --silent || npm install --silent) && npx tsc && (node build/main.js > /tmp/bgutil.log 2>&1 &) ) || log "   bgutil setup failed"
+  sleep 8
+  for c in "default" "mweb" "web" "tv" "web_safari"; do
+    have_audio && break
+    yt-dlp -f "bestaudio/best" --extractor-args "youtube:player_client=$c" -o "/tmp/yt/audio.%(ext)s" "$URL" 2>&1 | tail -3 | tee -a "$OUT/fetch_log.txt"
+  done
+fi
+
 A=$(ls /tmp/yt/audio.* 2>/dev/null | head -1)
-if [ -z "$A" ]; then echo "NO AUDIO"; echo "audio download failed $(date -u)" > "$OUT/STATUS.txt"; exit 0; fi
-ffmpeg -nostdin -y -i "$A" -ac 1 -ar 16000 /tmp/yt/audio16k.wav
+if [ -z "$A" ]; then log "NO AUDIO"; echo "audio download failed $(date -u)" > "$OUT/STATUS.txt"; exit 0; fi
+ffmpeg -nostdin -loglevel error -y -i "$A" -ac 1 -ar 16000 /tmp/yt/audio16k.wav
 ffprobe -v error -show_entries format=duration -of csv=p=0 /tmp/yt/audio16k.wav > "$OUT/duration.txt"
 echo "audio ok $(cat $OUT/duration.txt)s $(date -u)" > "$OUT/STATUS.txt"

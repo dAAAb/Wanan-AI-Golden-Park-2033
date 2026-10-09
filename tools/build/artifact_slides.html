@@ -1,0 +1,195 @@
+<title>AI黃金世紀簡報</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* one deliberate look: the deck's own navy + gold */
+:root{--bg:#0b1730;--panel:#11224a;--panel2:#18305f;--line:rgba(255,255,255,.16);--fg:#f4f6fb;--muted:#b4c0da;--gold:#ffc83d;--gold-ink:#1a1200;--shade:rgba(0,0,0,.55);color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;font-size:18px;line-height:1.6}
+.app{max-width:1240px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:grid;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 24px}
+header>div{min-width:0}
+.kicker{margin:0;color:var(--gold);font-weight:700;font-size:15px;letter-spacing:.06em}
+h1{margin:2px 0 0;font-size:clamp(24px,3.4vw,34px);font-weight:900;line-height:1.25;text-wrap:balance}
+h1 span{color:var(--gold)}
+.dl{display:flex;flex-wrap:wrap;gap:10px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:inherit;font-weight:700;font-size:17px;line-height:1.2;padding:11px 16px;border-radius:12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;min-height:46px}
+.btn:hover{background:var(--panel2)}
+.btn.gold{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.btn.gold:hover{filter:brightness(1.06)}
+.btn:focus-visible,.thumb:focus-visible,.nav:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.msg{margin:-6px 0 0;font-size:15px;color:var(--muted);min-height:1.5em}
+.stage{position:relative;aspect-ratio:16/9;width:100%;max-width:100%;background:#000;border-radius:14px;overflow:hidden;box-shadow:0 22px 60px rgba(0,0,0,.45)}
+.stage img{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.stage:fullscreen{border-radius:0;aspect-ratio:auto}
+.nav{position:absolute;top:0;bottom:0;width:16%;border:0;background:transparent;color:#fff;font-size:44px;font-weight:900;cursor:pointer;opacity:0;transition:opacity .2s}
+.nav.prev{left:0;background:linear-gradient(90deg,var(--shade),transparent)}
+.nav.next{right:0;background:linear-gradient(270deg,var(--shade),transparent)}
+.stage:hover .nav,.nav:focus-visible{opacity:1}
+.nav:disabled{display:none}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.count{font-weight:900;font-size:22px;font-variant-numeric:tabular-nums;color:var(--gold);min-width:4.2em}
+.stitle{flex:1 1 260px;min-width:0;margin:0;font-size:21px;font-weight:700;line-height:1.4}
+.pager{display:flex;gap:8px}
+.pager .btn{font-size:20px;padding-inline:18px}
+.notes{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px}
+.notes h2,.toc h2{margin:0 0 6px;font-size:14px;font-weight:700;letter-spacing:.1em;color:var(--muted)}
+.notes p{margin:0;font-size:20px;line-height:1.75;max-width:62em}
+.toc{display:grid;gap:10px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin:0;padding:0;list-style:none}
+.thumb{position:relative;display:block;width:100%;aspect-ratio:16/9;padding:0;border:3px solid transparent;border-radius:10px;overflow:hidden;background:#000;cursor:pointer}
+.thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.thumb b{position:absolute;left:6px;bottom:6px;font-size:14px;font-weight:900;line-height:1;padding:4px 7px;border-radius:7px;background:var(--shade);color:#fff}
+.thumb[aria-current="true"]{border-color:var(--gold)}
+footer{font-size:15px;color:var(--muted);display:grid;gap:6px;border-top:1px solid var(--line);padding-top:14px}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 18px}
+footer a{color:var(--gold);font-weight:700}
+kbd{font-family:inherit;font-size:.85em;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+@media (max-width:640px){
+  body{font-size:17px}
+  .notes p{font-size:18px}
+  .nav{opacity:1;width:20%;font-size:34px;background:transparent}
+  .thumbs{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+}
+</style>
+
+<div class="app">
+  <header>
+    <div>
+      <p class="kicker">非官方整理｜2026.10.08 臺北市政府記者會</p>
+      <h1>AI黃金世紀，<span>從臺北開始！</span> 簡報</h1>
+    </div>
+    <div class="dl">
+      <a class="btn gold" id="getPptx" href="__GH_PPTX__" target="_blank" rel="noopener">⬇ 下載 PPT（.pptx）</a>
+      <a class="btn" id="getPdf" href="__GH_PDF__" target="_blank" rel="noopener">⬇ 下載 PDF</a>
+    </div>
+  </header>
+  <p class="msg" id="msg" aria-live="polite"></p>
+
+  <section aria-label="投影片">
+    <div class="stage" id="stage">
+      <img id="slide" alt="" width="1920" height="1080">
+      <button class="nav prev" id="prev" aria-label="上一張">‹</button>
+      <button class="nav next" id="next" aria-label="下一張">›</button>
+    </div>
+  </section>
+
+  <div class="bar">
+    <span class="count" id="count">1 / 16</span>
+    <p class="stitle" id="stitle"></p>
+    <div class="pager">
+      <button class="btn" id="prev2" aria-label="上一張">←</button>
+      <button class="btn" id="next2" aria-label="下一張">→</button>
+      <button class="btn" id="full" hidden>⛶ 全螢幕</button>
+    </div>
+  </div>
+
+  <section class="notes" aria-labelledby="notesH">
+    <h2 id="notesH">講者備註</h2>
+    <p id="notes"></p>
+  </section>
+
+  <section class="toc" aria-labelledby="tocH">
+    <h2 id="tocH">全部 16 頁（點一下跳到該頁；鍵盤 <kbd>←</kbd> <kbd>→</kbd> 翻頁）</h2>
+    <ol class="thumbs" id="thumbs"></ol>
+  </section>
+
+  <footer>
+    <nav>
+      <a href="__U_MAIN__" target="_blank" rel="noopener">🌐 大字版互動網站</a>
+      <a href="__U_3D__" target="_blank" rel="noopener">🚕 3D 臺北 2033</a>
+      <a href="__U_TRANSCRIPT__" target="_blank" rel="noopener">📜 記者會逐字稿</a>
+    </nav>
+    <span>非官方粉絲整理，資料依臺北市政府 2026/10/08 新聞稿與媒體報導；園區配置為示意，非正式設計圖。</span>
+  </footer>
+</div>
+
+<script>
+const SLIDES = /*SLIDES*/[];
+const FILES = { pptx: ['AI-Golden-Century-Taipei.pptx', '__PPTX_SRC__'], pdf: ['AI-Golden-Century-Taipei.pdf', '__PDF_SRC__'] };
+const $ = (id) => document.getElementById(id);
+const N = SLIDES.length;
+let cur = 0;
+
+// thumbnails
+SLIDES.forEach((s, i) => {
+  const li = document.createElement('li');
+  const b = document.createElement('button');
+  b.className = 'thumb'; b.type = 'button'; b.setAttribute('aria-label', `第 ${i + 1} 頁：${s.t}`);
+  const im = document.createElement('img'); im.src = s.th; im.alt = ''; im.loading = 'lazy'; im.width = 480; im.height = 270;
+  const n = document.createElement('b'); n.textContent = i + 1;
+  b.append(im, n); b.addEventListener('click', () => { go(i); $('stage').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+  li.append(b); $('thumbs').append(li);
+});
+const thumbs = [...document.querySelectorAll('.thumb')];
+
+function go(i) {
+  cur = Math.max(0, Math.min(N - 1, i));
+  const s = SLIDES[cur];
+  $('slide').src = s.img; $('slide').alt = `第 ${cur + 1} 頁：${s.t}`;
+  $('count').textContent = `${cur + 1} / ${N}`;
+  $('stitle').textContent = s.t;
+  $('notes').textContent = s.n || '（本頁沒有備註）';
+  $('prev').disabled = $('prev2').disabled = cur === 0;
+  $('next').disabled = $('next2').disabled = cur === N - 1;
+  thumbs.forEach((t, k) => t.setAttribute('aria-current', k === cur ? 'true' : 'false'));
+  [cur - 1, cur + 1].forEach(k => { if (k >= 0 && k < N) new Image().src = SLIDES[k].img; });
+  try { history.replaceState(null, '', '#' + (cur + 1)); } catch (e) {}
+}
+['prev', 'prev2'].forEach(id => $(id).addEventListener('click', () => go(cur - 1)));
+['next', 'next2'].forEach(id => $(id).addEventListener('click', () => go(cur + 1)));
+addEventListener('keydown', (e) => {
+  if (e.altKey || e.ctrlKey || e.metaKey || /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  const k = e.key;
+  if (k === 'ArrowRight' || k === 'PageDown' || (k === ' ' && document.fullscreenElement)) { go(cur + 1); e.preventDefault(); }
+  else if (k === 'ArrowLeft' || k === 'PageUp') { go(cur - 1); e.preventDefault(); }
+  else if (k === 'Home') { go(0); e.preventDefault(); }
+  else if (k === 'End') { go(N - 1); e.preventDefault(); }
+});
+// swipe on the slide
+let tx = null, ty = 0;
+$('stage').addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+$('stage').addEventListener('touchend', (e) => {
+  if (tx === null) return;
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; tx = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(cur + (dx < 0 ? 1 : -1));
+});
+// full screen where the host allows it
+if (document.fullscreenEnabled) {
+  $('full').hidden = false;
+  $('full').addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else $('stage').requestFullscreen().catch(() => { $('full').hidden = true; });
+  });
+}
+const start = parseInt((location.hash || '').slice(1), 10);
+go(start >= 1 && start <= N ? start - 1 : 0);
+
+// downloads: hand over the real files when the viewer allows it; otherwise the buttons stay links to GitHub
+(async () => {
+  let dl = null;
+  try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+  if (!dl) return;
+  for (const [id, key] of [['getPptx', 'pptx'], ['getPdf', 'pdf']]) {
+    const a = $(id);
+    const onClick = async (e) => {
+      e.preventDefault();
+      const [name, src] = FILES[key];
+      $('msg').textContent = '準備檔案中…';
+      try {
+        const res = await fetch(src);
+        if (!res.ok) throw { code: 'fetch' };
+        const blob = await res.blob();
+        await dl.save({ filename: name, data: blob });
+        $('msg').textContent = '';
+      } catch (err) {
+        const code = err && err.code;
+        if (code === 'declined') { $('msg').textContent = ''; return; }
+        if (code === 'rate_limited') { $('msg').textContent = '下載視窗已開啟，請先完成或關閉它。'; return; }
+        // this view can't save files: fall back to the GitHub copy for the next click
+        a.removeEventListener('click', onClick);
+        $('msg').textContent = '這個檢視環境無法直接下載，再按一次按鈕會開啟 GitHub 下載頁。';
+      }
+    };
+    a.addEventListener('click', onClick);
+  }
+})();
+</script>

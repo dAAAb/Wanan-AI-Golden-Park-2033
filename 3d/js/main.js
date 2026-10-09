@@ -63,6 +63,11 @@ if (QUALITY.bloom) {
   composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
   bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.35, 0.6, 0.86);
+  // one NaN pixel would be blurred into big black squares by the bloom mips: sanitize what enters it
+  const hp = bloom.materialHighPassFilter;
+  hp.fragmentShader = hp.fragmentShader.replace('vec4 texel = texture2D( tDiffuse, vUv );',
+    'vec4 texel = texture2D( tDiffuse, vUv ); texel = min( max( texel, vec4( 0.0 ) ), vec4( 64.0 ) );');
+  hp.needsUpdate = true;
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 }
@@ -407,7 +412,7 @@ function updateTrees(t) {
   treeData.forEach((d, i) => {
     const fut = d[4] === 1;
     const k = fut ? THREE.MathUtils.smoothstep(t, 0.25 + (i % 97) / 97 * 0.5, 0.5 + (i % 97) / 97 * 0.5) : 1;
-    const sc = d[2] / 8 * Math.max(0.0001, k);
+    const sc = d[2] / 8 * Math.max(0.001, k);   // never 0: instanced normals are divided by the squared scale
     _p.set(d[0], fut ? 0.15 : 0.05, d[1]); _q.setFromAxisAngle(_s.set(0, 1, 0), i); _s.set(sc, sc, sc);
     _m.compose(_p, _q, _s);
     trees.trunk.setMatrixAt(i, _m); trees[d.slot[0]].setMatrixAt(d.slot[1], _m);
@@ -426,7 +431,7 @@ function updateFutureBuildings(t) {
   homeData.forEach((d, i) => {
     const k = g(i, homeData.length); const h = Math.max(0.01, d[4] * k);
     _m.compose(_p.set(d[0], 0, d[1]), _q, _s.set(d[2], h, d[3])); homes.setMatrixAt(i, _m);
-    _m.compose(_p.set(d[0], h, d[1]), _q, _s.set(d[2] * 0.92, k, d[3] * 0.92)); future.userData.roofG.setMatrixAt(i, _m);
+    _m.compose(_p.set(d[0], h, d[1]), _q, _s.set(d[2] * 0.92, Math.max(0.01, k), d[3] * 0.92)); future.userData.roofG.setMatrixAt(i, _m);
   });
   towers.instanceMatrix.needsUpdate = homes.instanceMatrix.needsUpdate = future.userData.crowns.instanceMatrix.needsUpdate = future.userData.roofG.instanceMatrix.needsUpdate = true;
   const tk = THREE.MathUtils.smoothstep(t, 0.4, 1);

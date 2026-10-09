@@ -1,12 +1,14 @@
 // Build slides/AI-Golden-Century-Taipei.pptx with pptxgenjs (structured deck: theme, layouts, sections).
 // usage: NODE_PATH=<node_modules> node tools/build/deck.js
+const fs = require('fs');
 const path = require('path');
 const pptxgen = require('pptxgenjs');
 const { applyTheme } = require(process.env.APPLY_THEME);
 
 const ROOT = path.resolve(__dirname, '../..');
 const P = (f) => path.join(ROOT, f);
-const SITE = process.env.SITE_URL || 'https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/index.html';
+// public link printed on the deck (the Claude Artifact copy of the site; see artifact_urls.json)
+const SITE = process.env.SITE_URL || JSON.parse(fs.readFileSync(path.join(__dirname, 'artifact_urls.json'), 'utf8')).main;
 const OUT = P('slides/AI-Golden-Century-Taipei.pptx');
 
 const THEME = {

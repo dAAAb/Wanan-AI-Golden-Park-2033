@@ -528,12 +528,18 @@ function buildPlayer(D) {
       pts.sort((a, b) => b[1] - a[1]);           // southernmost first (z grows to the south)
       const southMost = pts[0]; const north = pts[pts.length - 1];
       const target = [southMost[0] + (north[0] - southMost[0]) * 0.15, southMost[1] + (north[1] - southMost[1]) * 0.15];
-      start = target; path = pts.filter((p, i) => i % 3 === 0);
+      // snap to the nearest real road vertex and face along the road towards the airport
+      let bi = 0, bd2 = Infinity;
+      pts.forEach((p, i) => { const d = (p[0] - target[0]) ** 2 + (p[1] - target[1]) ** 2; if (d < bd2) { bd2 = d; bi = i; } });
+      start = pts[bi];
+      const ahead = pts.slice(bi + 1).find(p => p[1] < start[1] - 60) || north;   // pts are sorted south -> north
+      S.startHeading = Math.atan2(ahead[0] - start[0], ahead[1] - start[1]);
+      path = pts.filter((p, i) => i % 3 === 0);
     }
   }
   if (!start) { const s = 0, t = 900; start = [R.c[0] + s * R.u[0] + t * R.n[0], R.c[1] + s * R.u[1] + t * R.n[1]]; }
   S.startPath = path;
-  S.car.x = start[0]; S.car.z = start[1]; S.car.h = Math.PI; // facing north (-z)
+  S.car.x = start[0]; S.car.z = start[1]; S.car.h = S.startHeading ?? Math.PI; // facing north (-z) along the road
   S.start = start.slice();
   // terminal target: closest aerodrome-ish point near the end of 敦化北路, fallback south edge centre
   const ad = flatToPts(D.aerodrome, D.scale);
@@ -1044,7 +1050,7 @@ function updateRadar() {
   radar.restore();
   // target blip
   const t = currentTarget();
-  const toScreen = (x, z) => { const dx = x - px, dz = z - pz; const a = -(heading + Math.PI); const rx = dx * Math.cos(a) - dz * Math.sin(a), rz = dx * Math.sin(a) + dz * Math.cos(a); return [rx * (W / 2) / range, rz * (W / 2) / range]; };
+  const toScreen = (x, z) => { const dx = x - px, dz = z - pz; const a = heading + Math.PI; const rx = dx * Math.cos(a) - dz * Math.sin(a), rz = dx * Math.sin(a) + dz * Math.cos(a); return [rx * (W / 2) / range, rz * (W / 2) / range]; };
   if (t) {
     let [sx, sz] = toScreen(t.x, t.z); const l = Math.hypot(sx, sz), m = W / 2 - 14; if (l > m) { sx *= m / l; sz *= m / l; }
     radar.fillStyle = '#ffcc00'; radar.strokeStyle = '#000'; radar.lineWidth = 3; radar.beginPath(); radar.arc(W / 2 + sx, W / 2 + sz, 10, 0, Math.PI * 2); radar.fill(); radar.stroke();

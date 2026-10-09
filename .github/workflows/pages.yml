@@ -1,0 +1,31 @@
+name: pages
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore: ['research/**', 'tools/fetch/**']
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency: { group: pages, cancel-in-progress: true }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Collect site files
+        run: |
+          mkdir -p _site
+          cp -r index.html .nojekyll 3d transcript assets vendor _site/
+          [ -d slides ] && cp -r slides _site/ || true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -94,7 +94,7 @@ page = f'''<!doctype html>
 </head>
 <body>
 <header class="bar">
-  <a class="home" href="../">← 回首頁</a>
+  <a class="home" href="../index.html">← 回首頁</a>
   <div class="find"><input id="q" type="search" placeholder="搜尋逐字稿，例如：中央公園" aria-label="搜尋逐字稿"><span id="hits" aria-live="polite"></span></div>
   <div class="fs" role="group" aria-label="字體大小"><button data-fs="-1" aria-label="字體縮小">A−</button><button data-fs="1" aria-label="字體放大">A＋</button></div>
 </header>
@@ -106,7 +106,7 @@ page = f'''<!doctype html>
     <img src="../assets/photos/chiang-council.jpg" alt="臺北市長蔣萬安">
     <div class="vid"><iframe title="記者會影片" loading="lazy" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" src="https://www.youtube-nocookie.com/embed/{VID}?rel=0"></iframe></div>
   </div>
-  <div class="actions"><a class="btn" href="transcript.md" download>⬇ 下載文字檔（.md）</a><a class="btn" href="../slides/AI-Golden-Century-Taipei.pdf">📄 簡報 PDF</a><a class="btn gold" href="../3d/">🚕 3D 體驗</a><button class="btn" onclick="print()">🖨 列印</button></div>
+  <div class="actions"><a class="btn" href="transcript.md" download>⬇ 下載文字檔（.md）</a><a class="btn" href="../slides/AI-Golden-Century-Taipei.pdf">📄 簡報 PDF</a><a class="btn gold" href="../3d/index.html">🚕 3D 體驗</a><button class="btn" onclick="print()">🖨 列印</button></div>
   {verb_block}
   <section class="block" id="speech">
     <h2>致詞全文（臺北市政府新聞稿版）</h2>
@@ -119,7 +119,7 @@ page = f'''<!doctype html>
     <p class="badge">依媒體報導整理，非逐字。</p>
     {qa_html}
   </section>
-  <p class="foot">非官方整理。照片：Wikimedia Commons（臺北市政府，姓名標示）。<a href="../#sources">完整資料來源</a></p>
+  <p class="foot">非官方整理。照片：Wikimedia Commons（臺北市政府，姓名標示）。<a href="../index.html#sources">完整資料來源</a></p>
 </main>
 <script src="transcript.js" defer></script>
 </body>

@@ -1,0 +1,26 @@
+name: fetch-osm-pbf
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/fetch-osm-pbf.yml', 'tools/fetch/geojson_to_overpass.py']
+permissions:
+  contents: write
+concurrency: { group: fetch-osm-pbf, cancel-in-progress: false }
+jobs:
+  pbf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - run: sudo apt-get update -y && sudo apt-get install -y osmium-tool
+      - name: Download Taiwan extract and cut the Songshan area
+        run: |
+          curl -fL --retry 4 -o /tmp/tw.pbf https://download.geofabrik.de/asia/taiwan-latest.osm.pbf
+          ls -la /tmp/tw.pbf
+          osmium extract -b 121.512,25.026,121.602,25.098 --strategy=smart /tmp/tw.pbf -o /tmp/area.pbf --overwrite
+          osmium export /tmp/area.pbf -f geojsonseq -o /tmp/area.geojsonseq --overwrite
+          python3 tools/fetch/geojson_to_overpass.py /tmp/area.geojsonseq research/osm_pbf
+          ls -la research/osm_pbf
+      - run: 'bash tools/fetch/commit.sh "chore(data): OpenStreetMap extract (Geofabrik) around Songshan Airport" research/osm_pbf'

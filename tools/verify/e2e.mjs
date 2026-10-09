@@ -27,6 +27,15 @@ for (let i = 0; i < 30; i++) {
 }
 console.log('errors:', JSON.stringify(errs.slice(0, 30)));
 try { await p.click('#btnStart', { timeout: 5000 }); await p.waitForTimeout(8000); } catch (e) { console.log('start click failed', e.message); }
+// real keyboard input: hold W and check the taxi moves; then the labels must not jump between frames
+const before = await p.evaluate(() => ({ x: __S.car.x, z: __S.car.z, stuck: __api.blocked(__S.car.x, __S.car.z) }));
+await p.keyboard.down('KeyW'); await p.waitForTimeout(6000); await p.keyboard.up('KeyW');
+const after = await p.evaluate(() => ({ x: __S.car.x, z: __S.car.z }));
+console.log('drive test: startedInsideBuilding=' + before.stuck + ' moved=' + Math.hypot(after.x - before.x, after.z - before.z).toFixed(1) + 'm');
+const lbl = async () => p.evaluate(() => [...document.querySelectorAll('.lbl')].filter(e => getComputedStyle(e).display !== 'none').map(e => { const r = e.getBoundingClientRect(); return e.textContent + '@' + Math.round(r.x) + ',' + Math.round(r.y); }));
+await p.evaluate(() => __api.look(-1500, 900, 1700, 100, 0, -100)); await p.waitForTimeout(3000);
+const l1 = await lbl(); await p.waitForTimeout(1300); const l2 = await lbl();
+console.log('labels stable: ' + (JSON.stringify(l1) === JSON.stringify(l2)) + ' count=' + l1.length);
 await p.screenshot({ path: 'research/verify/e2e-3d.png' });
 await p.goto(base + '/index.html'); await p.waitForTimeout(3000); if (/External Content Notice/.test(await p.title())) { await Promise.all([p.waitForNavigation({ timeout: 60000 }).catch(() => {}), p.click('text=Open the page')]); await p.waitForTimeout(4000); } console.log('site title', await p.title());
 await p.screenshot({ path: 'research/verify/e2e-site.png' });

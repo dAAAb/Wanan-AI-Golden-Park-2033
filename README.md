@@ -4,6 +4,18 @@
 
 ## 公開連結
 
+**Claude Artifacts 版（不需 githack）**
+
+| 內容 | 連結 |
+|---|---|
+| 🌐 大字版互動網站 | https://claude.ai/artifact/8K5y9QidbXzNhXdy4qw3XF |
+| 🚕 3D 臺北 GTA 沉浸體驗 | https://claude.ai/artifact/Tq7QNLoTAKGTSxAHkZiysG |
+| 📜 記者會逐字稿 | https://claude.ai/artifact/Gtpv4cLdzdZ4EuogomFQ7J |
+
+> Artifact 版由 `tools/build/artifact_bundle.py` 產生（網址記在 `tools/build/artifact_urls.json`）：YouTube 影片改為連結、PPT／PDF 下載改連到 GitHub、three.js 從 jsDelivr 載入。
+
+**GitHub（githack）版**
+
 | 內容 | 連結 |
 |---|---|
 | 🌐 大字版互動網站 | https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/index.html |

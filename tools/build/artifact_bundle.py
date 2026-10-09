@@ -6,7 +6,7 @@ Artifact pages are wrapped in their own <html>/<head>/<body> skeleton, run in a 
 So each bundle gets: the page body with head assets on top, paths flattened to the bundle root,
 YouTube embeds turned into links, downloads pointed at GitHub, and links to the sibling artifacts.
 
-usage: python3 tools/build/artifact_bundle.py <outdir> [urls.json]
+usage: python3 tools/build/artifact_bundle.py <outdir> [tools/build/artifact_urls.json]
 """
 import json, os, re, shutil, sys
 
@@ -19,6 +19,7 @@ GH = "https://github.com/dAAAb/Wanan-AI-Golden-Park-2033"
 BR = "claude/taipei-ai-park-interactive-wsso9d"
 RAW = f"{GH}/raw/{BR}"
 YT = "https://youtu.be/ircGbXWHRbQ"
+THREE = "https://cdn.jsdelivr.net/npm/three@0.160.0"
 # fall back to the GitHub copy of a page until its artifact exists
 FALLBACK = {"main": f"https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/{BR}/index.html",
             "3d": f"https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/{BR}/3d/index.html",
@@ -85,8 +86,11 @@ def build_site():
 
 def build_3d():
     b = "3d"
-    fix = lambda s: s.replace("../vendor/", "vendor/").replace("../assets/", "assets/")
-    html = fix(read("3d/index.html"))
+    # import-map targets must be ./-relative (a bare "vendor/…" is ignored as a bare specifier)
+    fix = lambda s: s.replace("../vendor/", "./vendor/").replace("../assets/", "./assets/")
+    # three.js comes from the allowlisted CDN (same npm build as vendor/three, r160)
+    html = read("3d/index.html").replace("../vendor/three/three.module.min.js", f"{THREE}/build/three.module.min.js").replace("../vendor/three/addons/", f"{THREE}/examples/jsm/")
+    html = fix(html)
     html = html.replace('href="../index.html"', f'href="{U["main"]}"').replace('href="../transcript/index.html"', f'href="{U["transcript"]}"')
     html = ext_link(html)
     p = os.path.join(OUT, b, "index.html"); os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -95,13 +99,12 @@ def build_3d():
     for f in ("main.js", "city.js", "content.js"):
         files.append(copy(f"3d/js/{f}", b, f"js/{f}", fix))
     files.append(copy("3d/data/city.json", b, "data/city.json"))
-    for dp, _, fs in os.walk(os.path.join(ROOT, "vendor/three")):
-        for f in fs:
-            if f.endswith(".js"):
-                rel = os.path.relpath(os.path.join(dp, f), ROOT)
-                files.append(copy(rel, b, rel))
-    for f in ("chiang-portrait-crop.jpg", "chiang-speech.jpg", "chiang-stage.jpg", "chiang-council.jpg"):
-        files.append(copy(f"assets/photos/{f}", b))
+    # every image the page or its scripts point at
+    refs = set()
+    for src in ("3d/index.html", "3d/js/main.js", "3d/js/city.js", "3d/js/content.js"):
+        refs |= set(re.findall(r"\.\./(assets/[\w./-]+\.(?:jpg|png|webp))", read(src)))
+    for f in sorted(refs):
+        files.append(copy(f, b))
     return files
 
 
@@ -121,7 +124,7 @@ def build_transcript():
     css = read("transcript/transcript.css") + "\n.vid{display:flex;align-items:center;justify-content:center;text-decoration:none;background:linear-gradient(135deg,#0b1730,#1c2f5e)}\n.vid-link{color:#ffc83d;font-weight:900;font-size:1.1em}\n"
     os.makedirs(os.path.join(OUT, b), exist_ok=True)
     open(os.path.join(OUT, b, "transcript.css"), "w", encoding="utf-8").write(css)
-    return ["transcript.css", copy("transcript/transcript.js", b), copy("assets/photos/chiang-council.jpg", b)]
+    return ["transcript.css", copy("transcript/transcript.js", b, "transcript.js"), copy("assets/photos/chiang-council.jpg", b)]
 
 
 if __name__ == "__main__":

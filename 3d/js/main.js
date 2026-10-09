@@ -37,6 +37,9 @@ const scene = new THREE.Scene();
 scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
 scene.environmentIntensity = 0.55;
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 1.5, 26000);
+// phones in portrait see a very narrow slice at 60°; open the lens up so roads and checkpoints stay in view
+const fitFov = () => { const a = innerWidth / innerHeight; camera.aspect = a; camera.fov = a >= 1 ? 60 : Math.min(78, 60 + (1 - a) * 34); camera.updateProjectionMatrix(); };
+fitFov();
 camera.position.set(0, 600, 1200);
 scene.fog = new THREE.Fog(0xcfd8e3, 1500, 9000);
 
@@ -601,8 +604,19 @@ function nearestWaterPoint(p) {
 function updateLabels() {
   const w = innerWidth, h = innerHeight, fut = S.year > 0.5;
   const cand = [];
+  let edge = null;
   for (const L of labelsList) {
     if (L.hidden) { if (L.vis) { L.el.style.display = 'none'; L.vis = false; } continue; }
+    if (L === S.cpLabel) {
+      tmpV.copy(L.pos).project(camera);
+      const x = (tmpV.x * 0.5 + 0.5) * w, y = (-tmpV.y * 0.5 + 0.5) * h;
+      // only float it over the world inside the area the HUD panels leave free
+      if (tmpV.z < 1 && x > w * 0.06 && x < w * 0.94 && y > h * 0.2 + 40 && y < h * 0.72) {
+        if (L.el.classList.contains('edge')) { L.el.classList.remove('edge'); L.w = 0; }
+        cand.push({ L, d: camera.position.distanceTo(L.pos), x, y });
+      } else edge = L;
+      continue;
+    }
     const okWhen = L.when === 'both' || (L.when === 'future') === fut;
     const d = camera.position.distanceTo(L.pos);
     let ok = okWhen && d < L.max && d > L.min;
@@ -617,6 +631,7 @@ function updateLabels() {
   cand.sort((a, b) => b.L.pri - a.L.pri || a.d - b.d);
   const placed = [];
   let shown = 0;
+  if (edge) placed.push(pinToEdge(edge, w, h));
   for (const c of cand) {
     const L = c.L;
     if (!L.w) { L.el.style.display = 'block'; L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; L.vis = true; }
@@ -628,6 +643,24 @@ function updateLabels() {
     L.el.style.transform = `translate(${c.x.toFixed(1)}px,${c.y.toFixed(1)}px) translate(-50%,-100%) scale(${sc.toFixed(3)})`;
     if (!L.vis) { L.el.style.display = 'block'; L.vis = true; }
   }
+}
+
+// off-screen checkpoint: slide the marker along the screen edge in the target's direction, arrow pointing at it
+function pinToEdge(L, w, h) {
+  if (!L.el.classList.contains('edge')) { L.el.classList.add('edge'); L.w = 0; }
+  if (!L.vis) { L.el.style.display = 'block'; L.vis = true; }
+  if (!L.w) { L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; }
+  tmpV.copy(L.pos).applyMatrix4(camera.matrixWorldInverse);       // camera space: x right, y up, -z ahead
+  let dx = tmpV.x, dy = -tmpV.y;
+  if (tmpV.z > 0) dy = Math.max(dy, 0) + 0.2;                       // behind us: keep it on the lower edge
+  const n = Math.hypot(dx, dy) || 1; dx /= n; dy /= n;
+  const top = h * 0.2, bot = h * 0.72, cx = w / 2, cy = (top + bot) / 2;
+  const hx = w / 2 - L.w / 2 - 10, hy = (bot - top) / 2;
+  const t = Math.min(hx / Math.max(Math.abs(dx), 1e-3), hy / Math.max(Math.abs(dy), 1e-3));
+  const x = cx + dx * t, y = cy + dy * t;
+  L.el.style.setProperty('--a', Math.atan2(dy, dx).toFixed(3) + 'rad');
+  L.el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-50%)`;
+  return [x - L.w / 2, y - L.h / 2, x + L.w / 2, y + L.h / 2];
 }
 
 // ---------------- collisions ----------------
@@ -1074,7 +1107,7 @@ function updateRadar() {
   const mm = minimapImgs[S.year > 0.5 ? 1 : 0]; if (!mm) return;
   const W = 260, px = S.mode === 'drive' ? S.car.x : camera.position.x, pz = S.mode === 'drive' ? S.car.z : camera.position.z;
   const heading = S.mode === 'drive' ? S.car.h : S.drone.yaw + Math.PI;
-  const range = S.mode === 'drive' ? 420 + Math.abs(S.car.v) * 8 : Math.max(500, camera.position.y * 2);
+  const range = S.mode === 'drive' ? 420 + Math.abs(S.car.v) * 8 : THREE.MathUtils.clamp(camera.position.y * 2, 500, 2200);
   const k = (W / 2) / range * (1 / mm.sc);
   radar.save(); radar.fillStyle = '#1c2532'; radar.fillRect(0, 0, W, W);
   radar.translate(W / 2, W / 2); radar.rotate(heading + Math.PI);
@@ -1117,6 +1150,9 @@ function loop() {
     updatePlanes(t);
     updateFutureLife(dt, t);
     if (ferris) ferris.userData.wheel.rotation.z = t * 0.05;
+    const cinematic = S.mode === 'tour' || S.mode === 'cutscene';
+    if (S.cpLabel && currentTarget()) S.cpLabel.hidden = cinematic;   // keep the checkpoint out of the cinematic shots
+    checkpointMesh.visible = !!currentTarget() && !cinematic;
     if (checkpointMesh.visible) { checkpointMesh.rotation.y = t; checkpointMesh.scale.setScalar(1 + Math.sin(t * 4) * 0.05); }
     taxi.visible = S.mode !== 'drone' && S.mode !== 'tour' && S.mode !== 'cutscene' || S.mode === 'intro';
     updateLabels();
@@ -1125,7 +1161,7 @@ function loop() {
   if (composer) composer.render(); else renderer.render(scene, camera);
 }
 addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  fitFov();
   renderer.setSize(innerWidth, innerHeight); if (composer) composer.setSize(innerWidth, innerHeight);
 });
 
@@ -1143,6 +1179,7 @@ window.__api = {
   mission(i, cp = 0) { S.cpIndex = cp; setMission(i); },
   target: () => currentTarget(),
   blocked: (x, z) => blocked(x, z),
+  camera,
   wheelColor(c) { taxi.userData.wheels.forEach(w => { w.material = w.material.clone(); w.material.color.setHex(c); }); },
   step(n, dt, keys) { Object.assign(S.keys, keys || {}); for (let i = 0; i < n; i++) updateCar(dt); S.keys = {}; return { ...S.car }; },
 };

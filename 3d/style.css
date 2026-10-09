@@ -1,4 +1,5 @@
 :root{
+  color-scheme:dark;
   --gold:#ffc83d; --gold2:#ffdf7e; --ink:#0b0f17; --panel:rgba(8,12,20,.72); --line:rgba(255,255,255,.14);
   --text:#f5f7fa; --muted:#b9c2cf; --green:#7fe08a; --pink:#ff5aa5; --cyan:#58d8ff;
   --fs:20px;
@@ -52,7 +53,7 @@ blockquote{margin:12px 0;padding:12px 16px;border-left:5px solid var(--gold);bac
 .money{font-weight:900;font-size:24px;color:#7dff8a;text-shadow:0 2px 0 #000;font-variant-numeric:tabular-nums;margin-top:4px}
 .srow{display:flex;gap:10px;justify-content:flex-end;font-size:16px;color:var(--muted);margin-top:4px;flex-wrap:wrap}
 .srow b{font-size:18px}
-#toolbar{position:absolute;left:50%;transform:translateX(-50%);bottom:16px;width:max-content;display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 32px)}
+#toolbar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));width:max-content;display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 32px)}
 .tb{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:12px 16px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:#fff;font-size:18px;text-decoration:none;backdrop-filter:blur(6px)}
 .tb b{color:#fff;font-weight:700}
 .tb:hover{border-color:var(--gold)}
@@ -70,6 +71,8 @@ blockquote{margin:12px 0;padding:12px 16px;border-left:5px solid var(--gold);bac
 .lbl.zone::after{border-top-color:rgba(255,200,61,.92)}
 .lbl.cp{background:#ffcc00;color:#000;font-size:20px;animation:pulse 1.2s infinite}
 .lbl.cp::after{border-top-color:#ffcc00}
+.lbl.cp.edge::after{display:none}
+.lbl.cp.edge::before{content:"";display:inline-block;vertical-align:middle;width:20px;height:20px;margin:-3px 8px 0 0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M2 4L19 10L2 16L6 10Z'/%3E%3C/svg%3E") center/contain no-repeat;transform:rotate(var(--a,0rad))}
 .lbl.metro{background:rgba(88,216,255,.9);color:#001018}
 .lbl.metro::after{border-top-color:rgba(88,216,255,.9)}
 .lbl.small{font-size:15px;padding:4px 9px;background:rgba(8,12,20,.6)}

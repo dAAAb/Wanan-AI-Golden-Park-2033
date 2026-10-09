@@ -104,7 +104,7 @@ export function patchBuildingMaterial(mat, { instanced = false, glass = false } 
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
         uniform float uT; varying vec2 vWin; varying float vRoof; varying float vSeed;
-        ${instanced ? 'attribute vec3 aI;' : 'attribute vec2 aWin; attribute vec3 aB;'}`)
+        ${instanced ? 'attribute vec3 aI;' : 'attribute float aWin; attribute vec4 aB;'}`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>
         ${instanced ? `
           vec3 sc = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
@@ -114,11 +114,11 @@ export function patchBuildingMaterial(mat, { instanced = false, glass = false } 
           vSeed = aI.x;
         ` : `
           float sink = aB.x > 0.5 && aB.x < 1.5 ? uT : 0.0;
-          float grow = aB.x > 1.5 ? smoothstep(0.35, 1.0, uT) * aB.y : 0.0;
+          float grow = aB.x > 1.5 ? smoothstep(0.35, 1.0, uT) * aB.y / 50.0 : 0.0;
           transformed.y = transformed.y * (1.0 + grow) * (1.0 - sink) - sink * 4.0;
-          vWin = vec2(aWin.x, transformed.y);
+          vWin = vec2(aWin * 0.25, transformed.y);
           vRoof = step(0.5, normal.y);
-          vSeed = aB.z;
+          vSeed = aB.z / 255.0;
         `}`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
@@ -148,10 +148,10 @@ export function buildingDepthMaterial() {
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uT = U.uT;
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nuniform float uT; attribute vec3 aB;')
+      .replace('#include <common>', '#include <common>\nuniform float uT; attribute vec4 aB;')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
         float sink = aB.x > 0.5 && aB.x < 1.5 ? uT : 0.0;
-        float grow = aB.x > 1.5 ? smoothstep(0.35, 1.0, uT) * aB.y : 0.0;
+        float grow = aB.x > 1.5 ? smoothstep(0.35, 1.0, uT) * aB.y / 50.0 : 0.0;
         transformed.y = transformed.y * (1.0 + grow) * (1.0 - sink) - sink * 4.0;`);
   };
   return m;
@@ -206,22 +206,26 @@ export function waterMaterial() {
 // ---------- buildings ----------
 const PALETTE = [0xe9e4da, 0xd8d2c4, 0xc9c2b4, 0xbfb8ad, 0xd9c7b0, 0xc7b39a, 0xb8a58e, 0xe2d9cb, 0xa9a39a, 0xcfd3d6, 0xb9c2c9, 0xd6cfc0];
 const TALL = [0x9fb4c4, 0x8ea6b8, 0xa8b7c2, 0x7f97aa, 0xb6c3cc];
-export function buildBuildings(D, tileSize = 900) {
+export function buildBuildings(D, limit = Infinity, tileSize = 900) {
   const S = D.scale, B = D.buildings;
-  const n = B.h.length;
+  const n = Math.min(B.h.length, limit);
   const tiles = new Map();
   const footprints = [];   // for collisions
+  let ptr = 0;
   for (let i = 0; i < n; i++) {
-    const a = B.o[i], b = i + 1 < n ? B.o[i + 1] : B.c.length;
-    let r = [];
-    for (let j = a; j < b; j += 2) r.push([B.c[j] / S, B.c[j + 1] / S]);
+    const np = B.n[i];
+    let r = [], x = 0, z = 0;
+    for (let j = 0; j < np; j++) { x += B.c[ptr++]; z += B.c[ptr++]; r.push([x / S, z / S]); }
     if (r.length < 3) continue;
     if (signedArea(r) < 0) r.reverse();
     let cx = 0, cz = 0; for (const p of r) { cx += p[0]; cz += p[1]; } cx /= r.length; cz /= r.length;
     const key = Math.floor(cx / tileSize) + ',' + Math.floor(cz / tileSize);
     if (!tiles.has(key)) tiles.set(key, []);
-    tiles.get(key).push({ r, h: B.h[i], f: B.f[i], g: B.g[i], seed: hash(i), cx, cz });
-    footprints.push({ r, f: B.f[i], h: B.h[i], minx: Math.min(...r.map(p => p[0])), maxx: Math.max(...r.map(p => p[0])), minz: Math.min(...r.map(p => p[1])), maxz: Math.max(...r.map(p => p[1])) });
+    const g = B.g[i] / 10;
+    tiles.get(key).push({ r, h: B.h[i], f: B.f[i], g, seed: hash(i), cx, cz });
+    let minx = Infinity, maxx = -Infinity, minz = Infinity, maxz = -Infinity;
+    for (const p of r) { if (p[0] < minx) minx = p[0]; if (p[0] > maxx) maxx = p[0]; if (p[1] < minz) minz = p[1]; if (p[1] > maxz) maxz = p[1]; }
+    footprints.push({ r, f: B.f[i], h: B.h[i], minx, maxx, minz, maxz });
   }
   const mat = patchBuildingMaterial(new THREE.MeshLambertMaterial({ vertexColors: true }));
   const depth = buildingDepthMaterial();
@@ -229,7 +233,7 @@ export function buildBuildings(D, tileSize = 900) {
   const col = new THREE.Color(), roofC = new THREE.Color();
   for (const [key, list] of tiles) {
     let nv = 0; for (const b of list) nv += b.r.length * 4 + b.r.length;
-    const P = new Float32Array(nv * 3), N = new Int8Array(nv * 3), C = new Uint8Array(nv * 3), W = new Float32Array(nv * 2), A = new Float32Array(nv * 3);
+    const P = new Float32Array(nv * 3), N = new Int8Array(nv * 3), C = new Uint8Array(nv * 3), W = new Uint16Array(nv), A = new Uint8Array(nv * 4);
     const idx = [];
     let v = 0;
     for (const b of list) {
@@ -250,8 +254,8 @@ export function buildBuildings(D, tileSize = 900) {
           P[v * 3] = qv[0]; P[v * 3 + 1] = qv[1]; P[v * 3 + 2] = qv[2];
           N[v * 3] = Math.round(nx * 127); N[v * 3 + 1] = 0; N[v * 3 + 2] = Math.round(nz * 127);
           C[v * 3] = cR; C[v * 3 + 1] = cG; C[v * 3 + 2] = cB;
-          W[v * 2] = qv[3]; W[v * 2 + 1] = qv[1];
-          A[v * 3] = f; A[v * 3 + 1] = g; A[v * 3 + 2] = seed;
+          W[v] = Math.min(65535, Math.round(qv[3] * 4));
+          A[v * 4] = f; A[v * 4 + 1] = Math.round(g * 50); A[v * 4 + 2] = Math.round(seed * 255);
           v++;
         }
         const b0 = v - 4; idx.push(b0, b0 + 2, b0 + 1, b0, b0 + 3, b0 + 2);
@@ -262,8 +266,8 @@ export function buildBuildings(D, tileSize = 900) {
         P[v * 3] = p[0]; P[v * 3 + 1] = h; P[v * 3 + 2] = p[1];
         N[v * 3 + 1] = 127;
         C[v * 3] = Math.round(roofC.r * 255); C[v * 3 + 1] = Math.round(roofC.g * 255); C[v * 3 + 2] = Math.round(roofC.b * 255);
-        W[v * 2] = 0; W[v * 2 + 1] = h;
-        A[v * 3] = f; A[v * 3 + 1] = g; A[v * 3 + 2] = seed;
+        W[v] = 0;
+        A[v * 4] = f; A[v * 4 + 1] = Math.round(g * 50); A[v * 4 + 2] = Math.round(seed * 255);
         v++;
       }
       let tris = [];
@@ -274,8 +278,8 @@ export function buildBuildings(D, tileSize = 900) {
     geo.setAttribute('position', new THREE.BufferAttribute(P, 3));
     geo.setAttribute('normal', new THREE.BufferAttribute(N, 3, true));
     geo.setAttribute('color', new THREE.BufferAttribute(C, 3, true));
-    geo.setAttribute('aWin', new THREE.BufferAttribute(W, 2));
-    geo.setAttribute('aB', new THREE.BufferAttribute(A, 3));
+    geo.setAttribute('aWin', new THREE.BufferAttribute(W, 1));
+    geo.setAttribute('aB', new THREE.BufferAttribute(A, 4));
     geo.setIndex(idx.length > 65535 ? new THREE.Uint32BufferAttribute(idx, 1) : new THREE.Uint16BufferAttribute(idx, 1));
     geo.computeBoundingSphere();
     // enlarge bounds so grown buildings are not culled

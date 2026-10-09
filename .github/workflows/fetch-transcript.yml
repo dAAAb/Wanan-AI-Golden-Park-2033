@@ -1,8 +1,12 @@
 name: fetch-transcript
 on:
   workflow_dispatch:
+    inputs:
+      media_url:
+        description: '可直接下載的影片/音檔網址（選填）'
+        required: false
   push:
-    paths: ['tools/fetch/youtube.sh', 'tools/fetch/transcribe.py', '.github/workflows/fetch-transcript.yml']
+    paths: ['research/youtube/input/**', '.github/workflows/fetch-transcript.yml']
 permissions:
   contents: write
 concurrency: { group: fetch-transcript, cancel-in-progress: false }
@@ -23,9 +27,12 @@ jobs:
       - run: sudo apt-get update -y && sudo apt-get install -y ffmpeg
       - run: pip install -U "yt-dlp[default,curl-cffi]" faster-whisper opencc-python-reimplemented
       - run: bash tools/fetch/youtube.sh ircGbXWHRbQ
+        env:
+          YT_COOKIES: ${{ secrets.YT_COOKIES }}
+          MEDIA_URL: ${{ github.event.inputs.media_url }}
       - run: 'bash tools/fetch/commit.sh "chore(transcript): video metadata and captions" research/youtube'
       - name: Transcribe
         run: |
-          if [ -f /tmp/yt/audio16k.wav ]; then python tools/fetch/transcribe.py /tmp/yt/audio16k.wav; fi
+          if [ -f /tmp/yt/audio16k.wav ]; then python tools/fetch/transcribe.py /tmp/yt/audio16k.wav && python tools/build/build_transcript.py; fi
       - if: always()
-        run: 'bash tools/fetch/commit.sh "chore(transcript): whisper transcript of 2026-10-08 press conference" research/youtube'
+        run: 'bash tools/fetch/commit.sh "chore(transcript): whisper transcript of 2026-10-08 press conference" research/youtube transcript'

@@ -5,6 +5,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import {
   U, flatToPts, ringsOf, flatPolys, ribbons, pointInRing, signedArea, patchBuildingMaterial, patchRoadMaterial, waterMaterial,
   buildBuildings, makeTreeGeometries, makePlane, makeTaxi, makeTaipei101, makeGrandHotel, makeFerrisWheel, mergeGeometries,
@@ -14,7 +15,7 @@ import { PHOTO, INTRO, MISSIONS, CHECKPOINTS, FINALE, STATS, TOUR } from './cont
 const $ = (id) => document.getElementById(id);
 const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 const LOW = isTouch || Math.min(screen.width, screen.height) < 700 || /low=1/.test(location.search);
-const QUALITY = { pixelRatio: Math.min(devicePixelRatio, LOW ? 1.25 : 1.75), shadows: !LOW, bloom: !LOW, trees: LOW ? 2600 : 5200, cars: LOW ? 120 : 260 };
+const QUALITY = { pixelRatio: Math.min(devicePixelRatio, LOW ? 1.25 : 1.75), shadows: !LOW, bloom: !LOW, trees: LOW ? 2600 : 5200, cars: LOW ? 120 : 260, buildings: LOW ? 26000 : 60000 };
 
 // ---------------- renderer / scene ----------------
 const canvas = $('c');
@@ -33,6 +34,8 @@ renderer.shadowMap.enabled = QUALITY.shadows;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 1.5, 26000);
 camera.position.set(0, 600, 1200);
 scene.fog = new THREE.Fog(0xcfd8e3, 1500, 9000);
@@ -110,7 +113,7 @@ async function build() {
 
   // ground
   const gTex = makeGroundTexture();
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(60000, 60000), new THREE.MeshLambertMaterial({ color: 0xbdb7aa, map: gTex }));
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(60000, 60000), new THREE.MeshLambertMaterial({ color: 0xe2ddd2, map: gTex }));
   gTex.repeat.set(600, 600);
   ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; world.add(ground);
   addMountains();
@@ -177,7 +180,7 @@ async function build() {
   if (railGr.length) world.add(new THREE.Mesh(ribbons(railGr, 0.7, () => 6, c => c.setHex(0x6b5d50)), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 })));
 
   setLoad(0.66, `蓋 ${D.buildings.h.length.toLocaleString()} 棟房子…`); await frame();
-  buildings = buildBuildings(D);
+  buildings = buildBuildings(D, QUALITY.buildings);
   world.add(buildings.group);
   footprintGrid = makeGrid(buildings.footprints.map(f => ({ ...f, kind: 'b' })));
   roadGrid = makeRoadGrid(roadLines.filter(r => !r.e));
@@ -193,6 +196,7 @@ async function build() {
   buildPlayer(D);
   buildLabels(D);
   minimapImgs = [drawMinimap(D, 0), drawMinimap(D, 1)];
+  S.ready = true;
   setLoad(1, '完成！按「開始任務」上路');
   $('btnStart').disabled = false; $('btnTour').disabled = false;
 }
@@ -253,16 +257,17 @@ function buildAirport(D) {
   }
   airport.add(lights);
   // parked planes
-  let stands = D.aero.stands.slice(0, 14);
+  let stands = D.aero.stands.filter((_, i) => i % 2 === 0).slice(0, 18);
   if (stands.length < 4 && aprons.length) {
     stands = []; const a = aprons.slice().sort((p, q) => Math.abs(signedArea(q)) - Math.abs(signedArea(p)))[0];
     let cx = 0, cz = 0; a.forEach(p => { cx += p[0]; cz += p[1]; }); cx /= a.length; cz /= a.length;
     for (let i = -3; i <= 3; i++) stands.push([cx + R.u[0] * i * 70, cz + R.u[1] * i * 70]);
   }
   const base = makePlane();
-  stands.forEach(([x, z], i) => {
+  stands.forEach(([x, z, a], i) => {
     const p = base.clone(); p.position.set(x, 3, z);
-    p.rotation.y = -R.ang + Math.PI / 2 + (Math.random() - 0.5) * 0.3; p.scale.setScalar(0.95 + Math.random() * 0.15);
+    p.rotation.y = a !== undefined ? -Math.atan2(Math.cos(a), Math.sin(a)) : -R.ang + Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+    p.scale.setScalar(0.95 + Math.random() * 0.15);
     airport.add(p);
   });
   // moving planes: one taking off, one landing
@@ -273,7 +278,8 @@ function buildAirport(D) {
 function buildFuture(D) {
   const F = D.future, sc = D.scale;
   const park = flatToPts(F.park, sc), ai = flatToPts(F.ai, sc), live = flatToPts(F.live, sc);
-  const zoneGeo = flatPolys([park, ai, live], 0.9, (c, k) => c.setHex([0x5da34f, 0xcfd4d6, 0xd9cdb6][k]));
+  const extra = (F.aiExtra || []).map(a => flatToPts(a, sc));
+  const zoneGeo = flatPolys([park, ai, live, ...extra], 0.9, (c, k) => c.setHex([0x5da34f, 0xcfd4d6, 0xd9cdb6][k] ?? 0xcfd4d6));
   const zoneMat = new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -12, transparent: true, opacity: 0 });
   const zones = new THREE.Mesh(zoneGeo, zoneMat); zones.receiveShadow = true; future.add(zones);
   future.userData.fadeMats = [zoneMat];
@@ -299,7 +305,7 @@ function buildFuture(D) {
   towerData = F.towers; homeData = F.homes;
   const box = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
   const mkInst = (data, colors, glass) => {
-    const mat = patchBuildingMaterial(new THREE.MeshStandardMaterial({ roughness: glass ? 0.25 : 0.7, metalness: glass ? 0.45 : 0.05, vertexColors: false }), { instanced: true, glass });
+    const mat = patchBuildingMaterial(glass ? new THREE.MeshStandardMaterial({ roughness: 0.18, metalness: 0.35 }) : new THREE.MeshLambertMaterial(), { instanced: true, glass });
     const geo = box.clone(); const aI = new Float32Array(data.length * 3);
     data.forEach((d, i) => { aI[i * 3] = Math.random(); aI[i * 3 + 1] = Math.random() * 10; });
     geo.setAttribute('aI', new THREE.InstancedBufferAttribute(aI, 3));
@@ -309,7 +315,7 @@ function buildFuture(D) {
     mesh.castShadow = true; mesh.receiveShadow = true; mesh.frustumCulled = false;
     future.add(mesh); return mesh;
   };
-  towers = mkInst(towerData, [0x8fb3c9, 0x6f93ad, 0xa7c4d4, 0x2f4a63], true);
+  towers = mkInst(towerData, [0xb8d4e6, 0x9cc0d8, 0xcfe0ea, 0x8fb0c8], true);
   homes = mkInst(homeData, [0xf0e6d2, 0xe5d3b8, 0xdfe6dc, 0xf3efe6], false);
   // roof gardens on homes
   const roofG = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.6, 1).translate(0, 0.3, 0), new THREE.MeshLambertMaterial({ color: 0x5fae55 }), homeData.length);
@@ -321,7 +327,7 @@ function buildFuture(D) {
 
   // landmark AI tower: twisted stack + gold ring + light beam
   aiTower = new THREE.Group();
-  const glass = new THREE.MeshStandardMaterial({ color: 0x7fa8c4, roughness: 0.15, metalness: 0.7, emissive: 0x0a2440, emissiveIntensity: 0.4 });
+  const glass = new THREE.MeshStandardMaterial({ color: 0xa9cbe0, roughness: 0.12, metalness: 0.55, emissive: 0x0a2440, emissiveIntensity: 0.25 });
   for (let i = 0; i < 26; i++) {
     const s = new THREE.Mesh(new THREE.BoxGeometry(46 - i * 0.9, 11.2, 46 - i * 0.9), glass); s.position.y = i * 11.5 + 5.6; s.rotation.y = i * 0.06; s.castShadow = true; aiTower.add(s);
   }
@@ -412,7 +418,7 @@ function updateFutureBuildings(t) {
   towerData.forEach((d, i) => {
     const k = g(i, towerData.length); const h = Math.max(0.01, d[4] * k);
     _m.compose(_p.set(d[0], 0, d[1]), _q, _s.set(d[2], h, d[3])); towers.setMatrixAt(i, _m);
-    _m.compose(_p.set(d[0], h, d[1]), _q, _s.set(d[2] * 0.7, 6 * k + 0.01, d[3] * 0.7)); future.userData.crowns.setMatrixAt(i, _m);
+    _m.compose(_p.set(d[0], h, d[1]), _q, _s.set(d[2] * 0.82, 2.2 * k + 0.01, d[3] * 0.82)); future.userData.crowns.setMatrixAt(i, _m);
   });
   homeData.forEach((d, i) => {
     const k = g(i, homeData.length); const h = Math.max(0.01, d[4] * k);
@@ -534,7 +540,7 @@ function buildPlayer(D) {
   let best = null, bd = Infinity;
   const ref = path.length ? path[path.length - 1] : [R.c[0] + R.n[0] * 300, R.c[1] + R.n[1] * 300];
   for (const p of ad) { const d = Math.hypot(p[0] - ref[0], p[1] - ref[1]); if (d < bd) { bd = d; best = p; } }
-  S.terminal = best || ref;
+  S.terminal = path.length ? path[path.length - 1] : (best || ref);
   // checkpoint marker
   const cpMat = new THREE.MeshBasicMaterial({ color: 0xffcc00, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false });
   checkpointMesh = new THREE.Mesh(new THREE.CylinderGeometry(12, 12, 6, 40, 1, true), cpMat); checkpointMesh.position.y = 3;
@@ -554,7 +560,8 @@ function buildLabels(D) {
   const cen = (flat) => { const p = flatToPts(flat, sc); let x = 0, z = 0; p.forEach(q => { x += q[0]; z += q[1]; }); return [x / p.length, z / p.length]; };
   const pc = cen(F.park), ac = cen(F.ai), lc = cen(F.live);
   S.zoneCentres = { park: pc, ai: [F.landmark[0], F.landmark[1]], live: lc, metro: F.stations[0], river: null, renewal: null };
-  addLabel('🌳 110公頃 中央公園', pc[0], 60, pc[1], 'zone', { when: 'future', max: 9000 });
+  const pl = [R.c[0] - R.u[0] * R.L * 0.3 + R.n[0] * (R.tPark - 300), R.c[1] - R.u[1] * R.L * 0.3 + R.n[1] * (R.tPark - 300)];
+  addLabel('🌳 110公頃 中央公園', pl[0], 50, pl[1], 'zone', { when: 'future', max: 9000 });
   addLabel('🤖 100公頃 AI產業聚落', F.landmark[0], 420, F.landmark[1], 'zone', { when: 'future', max: 12000 });
   addLabel('🏡 90公頃 國際永續生活聚落', lc[0], 110, lc[1], 'zone', { when: 'future', max: 9000 });
   addLabel('✈️ 松山機場（2026）', R.c[0], 80, R.c[1], 'zone', { when: 'past', max: 12000 });
@@ -705,6 +712,7 @@ function showHelp() { $('help').hidden = false; }
 function startGame(tour) {
   $('intro').hidden = true; $('hud').hidden = false; if (isTouch) $('touch').hidden = false;
   S.mode = 'drive';
+  const c = S.car; camera.position.set(c.x - Math.sin(c.h) * 60, 40, c.z - Math.cos(c.h) * 60); // swoop in from above
   setMission(0);
   setTime(0);
   if (tour) startTour(); else toast('W A S D / 方向鍵開車，滑鼠拖曳轉視角 🚕');
@@ -965,7 +973,7 @@ function updateEnvironment(dt) {
   S.tod += (S.todTarget - S.tod) * Math.min(1, dt * 1.2);
   const n = S.tod; U.uNight.value = n;
   // sun: golden hour (mode 0), day (mode 2), night (mode 1)
-  const elev = S.timeMode === 2 ? 55 : 14, az = 235;
+  const elev = S.timeMode === 2 ? 58 : 16, az = 320;
   const phi = THREE.MathUtils.degToRad(90 - THREE.MathUtils.lerp(elev, -8, n)), th = THREE.MathUtils.degToRad(az);
   sun.setFromSphericalCoords(1, phi, th);
   const su = sky.material.uniforms; su.sunPosition.value.copy(sun); su.turbidity.value = 6; su.rayleigh.value = S.timeMode === 2 ? 1.2 : 2.2; su.mieCoefficient.value = 0.006; su.mieDirectionalG.value = 0.85;
@@ -976,7 +984,7 @@ function updateEnvironment(dt) {
   hemi.color.setHSL(0.6, 0.5, THREE.MathUtils.lerp(0.85, 0.35, n));
   renderer.toneMappingExposure = THREE.MathUtils.lerp(0.95, 0.75, n);
   scene.fog.color.setHSL(THREE.MathUtils.lerp(golden ? 0.08 : 0.58, 0.63, n), THREE.MathUtils.lerp(golden ? 0.45 : 0.3, 0.5, n), THREE.MathUtils.lerp(golden ? 0.78 : 0.84, 0.07, n));
-  scene.fog.near = THREE.MathUtils.lerp(1500, 600, n); scene.fog.far = THREE.MathUtils.lerp(9500, 6000, n);
+  scene.fog.near = THREE.MathUtils.lerp(2600, 900, n); scene.fog.far = THREE.MathUtils.lerp(16000, 8000, n);
   sky.visible = n < 0.97;
   scene.background = n > 0.5 ? new THREE.Color().setHSL(0.63, 0.55, 0.035) : null;
   stars.material.opacity = THREE.MathUtils.smoothstep(n, 0.5, 1);
@@ -1005,6 +1013,7 @@ function drawMinimap(D, fut) {
   if (!fut) { poly(flatToPts(D.aerodrome, D.scale), '#a9c27e'); g.strokeStyle = '#2c2e31'; g.lineWidth = (R.w || 60) * sc; g.beginPath(); g.moveTo(X(R.a[0]), Z(R.a[1])); g.lineTo(X(R.b[0]), Z(R.b[1])); g.stroke(); }
   else {
     poly(flatToPts(D.future.park, D.scale), '#4f9e4a'); poly(flatToPts(D.future.ai, D.scale), '#e0c46a'); poly(flatToPts(D.future.live, D.scale), '#e9c9a0');
+    (D.future.aiExtra || []).forEach(a => poly(flatToPts(a, D.scale), '#e0c46a'));
     D.future.lakes.forEach(l => poly(flatToPts(l, D.scale), '#5aa3c9'));
   }
   g.lineCap = 'round';
@@ -1050,7 +1059,7 @@ function loop() {
   requestAnimationFrame(loop);
   const dt = Math.min(0.05, clock.getDelta()), t = clock.elapsedTime;
   U.uTime.value = t;
-  if (S.D) {
+  if (S.ready) {
     if (!S.paused) {
       if (S.mode === 'drive') updateCar(dt);
       else if (S.mode === 'drone') updateDrone(dt);
@@ -1079,3 +1088,12 @@ addEventListener('resize', () => {
 loop();
 build().catch(err => { console.error(err); $('loadText').textContent = '載入失敗：' + err.message + '（請重新整理）'; });
 window.__S = S; // debug handle
+// scripted camera for screenshots / renders (used by tools/build/render.mjs)
+window.__api = {
+  year(y) { S.yearTarget = S.year = y; future.visible = y > 0; S._futInit = false; },
+  time(m) { setTime(m); S.tod = S.todTarget; },
+  drone(x, y, z, yaw, pitch) { S.mode = 'drone'; S.drone.pos.set(x, y, z); S.drone.yaw = yaw; S.drone.pitch = pitch; },
+  look(x, y, z, tx, ty, tz) { S.mode = 'still'; camera.position.set(x, y, z); camera.lookAt(tx, ty, tz); },
+  hud(on) { $('hud').style.display = on ? '' : 'none'; $('intro').hidden = true; },
+  R, zones: () => S.zoneCentres,
+};

@@ -6,7 +6,7 @@ export const PHOTO = {
   podium: '../assets/photos/chiang-council.jpg',
   stage: '../assets/photos/chiang-stage.jpg',
   map: '../assets/photos/chiang-map.jpg',
-  lee: '../assets/photos/lee-shih-chuan.png',
+  lee: '../assets/photos/lee-shih-chuan.jpg',
 };
 
 export const INTRO = {

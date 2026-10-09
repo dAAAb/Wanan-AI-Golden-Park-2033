@@ -13,9 +13,10 @@ from shapely.geometry import Polygon, MultiPolygon, LineString, Point, box
 from shapely.ops import unary_union, linemerge, polygonize
 from shapely import affinity
 
-RAW = "research/osm"
-OUT = "3d/data/city.json"
+RAW = os.environ.get("OSM_RAW", "research/osm_pbf")
+OUT = os.environ.get("CITY_OUT", "3d/data/city.json")
 LAT0, LON0 = 25.0697, 121.5520
+SCALE = 2
 KX = 111320.0 * math.cos(math.radians(LAT0))
 KZ = 110574.0
 
@@ -66,11 +67,11 @@ def ring_list(pg, tol=0.8):
     if isinstance(pg, MultiPolygon): pg = max(pg.geoms, key=lambda g: g.area)
     c = list(pg.exterior.coords)[:-1]
     if len(c) < 3: return None
-    return [int(round(v * 10)) for xy in c for v in xy]
+    return [int(round(v * SCALE)) for xy in c for v in xy]
 
 def line_list(ls, tol=1.0):
     ls = ls.simplify(tol)
-    return [int(round(v * 10)) for xy in ls.coords for v in xy]
+    return [int(round(v * SCALE)) for xy in ls.coords for v in xy]
 
 def num(s):
     m = re.match(r"\s*([0-9.]+)", str(s or ""))
@@ -127,6 +128,9 @@ for el in feats:
         x, z = P(el["lat"], el["lon"]); aero["helipad"].append([round(x), round(z)])
     elif a == "parking_position" and el["type"] == "node":
         x, z = P(el["lat"], el["lon"]); aero["stands"].append([round(x), round(z)])
+    elif a == "parking_position" and el["type"] == "way" and el.get("geometry"):
+        c = way_coords(el["geometry"]); (ax, az), (bx, bz) = c[0], c[-1]
+        aero["stands"].append([round((ax + bx) / 2), round((az + bz) / 2), round(math.atan2(bx - ax, bz - az), 2)])
 
 if aerodrome is None:
     sys.exit("no aerodrome polygon found")
@@ -141,20 +145,32 @@ L = math.hypot(x1 - x0, z1 - z0); ux, uz = (x1 - x0) / L, (z1 - z0) / L
 cx, cz = (x0 + x1) / 2, (z0 + z1) / 2
 nx, nz = -uz, ux   # perpendicular; +t
 if nz < 0: nx, nz = -nx, -nz   # make +t point south (z grows to south)
+def biggest(g):
+    if isinstance(g, MultiPolygon): return max(g.geoms, key=lambda q: q.area)
+    return g
 def to_st(x, z): return ((x - cx) * ux + (z - cz) * uz, (x - cx) * nx + (z - cz) * nz)
 def from_st(s, t): return (cx + s * ux + t * nx, cz + s * uz + t * nz)
 ang = math.atan2(uz, ux)
 
 # ---------- 2033 schematic zones (300 ha site) ----------
-site = aerodrome
-# extend southwards a little to approximate the 300 ha (airport + 松南營區 + periphery)
-grow = 0
-while site.area < 3.0e6 and grow < 400:
-    grow += 10
-    site = aerodrome.union(aerodrome.buffer(grow).intersection(
-        Polygon([from_st(-L, 0), from_st(L, 0), from_st(L, 2000), from_st(-L, 2000)])))
+mil = []; ai_extra = []
+for el in feats:
+    t = el.get("tags", {})
+    if t.get("landuse") == "military" or t.get("military") in ("base", "airfield", "barracks"):
+        for pg in as_polys(el):
+            if pg.distance(aerodrome) < 120 and pg.area > 3000: mil.append(pg.buffer(0))
+            elif pg.distance(aerodrome) < 700 and pg.area > 8000 and t.get("name", "") in ("松南營區", "新通航聯隊", "福山營區") or (
+                    pg.distance(aerodrome) < 500 and pg.area > 20000 and pg.centroid.y > aerodrome.centroid.y):
+                ai_extra.append(pg.buffer(0))
+site = unary_union([aerodrome] + mil).buffer(8).buffer(-8)
+if isinstance(site, MultiPolygon):
+    parts = sorted(site.geoms, key=lambda g: -g.area)
+    site = parts[0]
+    ai_extra += [q for q in parts[1:] if q.area > 5000]
 site = site.simplify(2)
-print("site ha", site.area / 1e4, "grow", grow)
+ai_extra = [p.difference(site) for p in ai_extra]
+ai_extra = [biggest(p) for p in ai_extra if not p.is_empty and p.area > 5000] if False else ai_extra
+print("site ha", site.area / 1e4, "military parts", len(mil), "ai extra", [round(p.area / 1e4, 1) for p in ai_extra])
 north = site.intersection(Polygon([from_st(-3 * L, -3000), from_st(3 * L, -3000), from_st(3 * L, 0), from_st(-3 * L, 0)]))
 # find band t0 so that park (t < t0) == 110 ha
 lo, hi = -800.0, 800.0
@@ -192,11 +208,13 @@ def restricted(x, z):
 
 # ---------- buildings ----------
 blds = {}
-for i in range(9):
-    for el in load(f"buildings_{i}"):
+import glob
+for fn in sorted(glob.glob(f"{RAW}/buildings_*.json.gz")):
+    for el in load(os.path.basename(fn)[:-8]):
         blds[(el["type"], el["id"])] = el
 print("buildings raw", len(blds))
-B = {"h": [], "f": [], "g": [], "o": [], "c": []}
+B = {"h": [], "f": [], "g": [], "n": [], "c": []}
+cands = []
 TAIPEI101 = P(25.03363, 121.56481)
 GRAND = P(25.07906, 121.52617)
 skip_near = [(TAIPEI101, 90, 100), (GRAND, 60, 10)]
@@ -221,15 +239,23 @@ for (typ, oid), el in blds.items():
         if t.get("building:part") and not t.get("height") and not t.get("building:levels"): continue
         h = max(3.0, min(h, 520.0))
         in_air = aerodrome.contains(c)
-        in_site = site.contains(c)
+        in_site = site.contains(c) or any(p.contains(c) for p in ai_extra)
         flag = 0; g = 0
         if in_site: flag = 1; n_air += 1
         elif restricted(c.x, c.y) and h <= 30:
             flag = 2; g = round(hrand(oid + 1, 1.2, 3.6), 2); restricted_area += pg.area
         r = ring_list(pg, 0.7)
         if not r: continue
-        B["o"].append(len(B["c"])); B["c"] += r
-        B["h"].append(round(h, 1)); B["f"].append(flag); B["g"].append(g)
+        dist = math.hypot(c.x - cx, c.y - cz)
+        keep = dist < 2600 or pg.area > 160 or h > 30 or (dist < 3600 and pg.area > 70)
+        if not keep: continue
+        cands.append((dist, -pg.area, round(h, 1), flag, g, r))
+cands.sort(key=lambda q: (q[0] > 2600, -q[1] if q[0] > 2600 else q[0]))
+for dist, na, h, flag, g, r in cands[:60000]:
+    # delta encode: first point absolute, then differences
+    dr = r[:2] + [r[k] - r[k - 2] for k in range(2, len(r))]
+    B["n"].append(len(r) // 2); B["c"] += dr
+    B["h"].append(int(round(h))); B["f"].append(flag); B["g"].append(int(round(g * 10)))
 print("buildings kept", len(B["h"]), "in site", n_air, "restricted footprint ha", restricted_area / 1e4)
 
 # ---------- roads / rail / water / green / labels ----------
@@ -249,8 +275,9 @@ for el in feats:
         nm = t.get("name:zh-Hant") or t.get("name")
         if not nm: continue
         x, z = P(el["lat"], el["lon"])
-        kind = "station" if t.get("railway") == "station" else t.get("place") or t.get("tourism") or t.get("amenity")
-        labels.append({"n": nm, "x": round(x), "z": round(z), "k": kind})
+        kind = "station" if t.get("railway") == "station" else t.get("place") or ("attraction" if t.get("tourism") == "attraction" else None) or ("university" if t.get("amenity") == "university" else None)
+        if kind in ("station", "suburb", "quarter", "neighbourhood", "attraction", "university"):
+            if not any(l["n"] == nm for l in labels): labels.append({"n": nm, "x": round(x), "z": round(z), "k": kind})
         continue
     hw = t.get("highway")
     if hw in RW and el["type"] == "way":
@@ -292,10 +319,11 @@ for el in feats:
     gk = t.get("leisure") or t.get("landuse") or t.get("natural")
     if gk in GREEN and el["type"] in ("way", "relation"):
         for pg in as_polys(el):
-            if pg.area > 150:
-                r = ring_list(pg, 1.5)
+            if pg.area > 400:
+                r = ring_list(pg, 2.0)
                 if r: green.append({"k": GREEN[gk], "c": r})
 
+roads_list_for_bounds = [roads["c"]]
 # ---------- schematic future layout ----------
 rnd = random.Random(2033)
 def poly_pts(pg, tol=2.0): return ring_list(pg, tol)
@@ -314,10 +342,18 @@ def grid_in(pg, step_s, step_t, margin):
             t += step_t
         s += step_s
 ai_c = to_st(ai.centroid.x, ai.centroid.y)
+fut["aiExtra"] = []
+for pe in ai_extra:
+    pe = biggest(pe.buffer(0))
+    if pe.is_empty or pe.area < 5000: continue
+    fut["aiExtra"].append(poly_pts(pe))
+    for s_, t_, x, z in grid_in(pe, 80, 75, 22):
+        fut["towers"].append([round(x, 1), round(z, 1), round(rnd.uniform(30, 44), 1), round(rnd.uniform(26, 38), 1), round(rnd.uniform(70, 150)), rnd.randint(0, 3)])
 for s, t, x, z in grid_in(ai, 95, 85, 30):
     d = math.hypot(s - ai_c[0], t - ai_c[1])
-    h = max(40, 230 - d * 0.32 + rnd.uniform(-25, 25))
-    w = rnd.uniform(34, 52); dp = rnd.uniform(30, 46)
+    h = max(38, 195 - d * 0.36 + rnd.uniform(-30, 30))
+    w = rnd.uniform(34, 50); dp = rnd.uniform(30, 44)
+    if rnd.random() < 0.22: h = rnd.uniform(18, 34); w = rnd.uniform(60, 78); dp = rnd.uniform(50, 66)
     fut["towers"].append([round(x, 1), round(z, 1), round(w, 1), round(dp, 1), round(h), rnd.randint(0, 3)])
 # landmark AI tower at the cluster centre
 ax, az = ai.centroid.x, ai.centroid.y
@@ -337,7 +373,7 @@ for k, ls_ in enumerate(lake_s):
     lake = lake.intersection(park.buffer(-25))
     if not lake.is_empty and lake.area > 2000:
         fut["lakes"].append(poly_pts(biggest(lake), 1.0))
-lakes_u = unary_union([Polygon([(fut["lakes"][i][j] / 10, fut["lakes"][i][j + 1] / 10) for j in range(0, len(fut["lakes"][i]), 2)]) for i in range(len(fut["lakes"]))]) if fut["lakes"] else Polygon()
+lakes_u = unary_union([Polygon([(fut["lakes"][i][j] / SCALE, fut["lakes"][i][j + 1] / SCALE) for j in range(0, len(fut["lakes"][i]), 2)]) for i in range(len(fut["lakes"]))]) if fut["lakes"] else Polygon()
 spine = runway.intersection(park.buffer(-10))
 if spine.is_empty: spine = LineString([from_st(-L / 2 + 50, t_park / 2), from_st(L / 2 - 50, t_park / 2)])
 fut["spine"] = line_list(spine if isinstance(spine, LineString) else max(spine.geoms, key=lambda g: g.length), 1)
@@ -353,6 +389,16 @@ while len(fut["trees"]) < 5200 and tries < 60000:
     if abs(t) < 22 and rnd.random() < 0.9: continue        # keep the runway-memory promenade open
     if rnd.random() < 0.35 and math.sin(s / 140) * math.cos(t / 110) > 0.25: continue  # meadows
     fut["trees"].append([round(x, 1), round(z, 1), round(rnd.uniform(6, 15), 1), rnd.randint(0, 2)])
+# street trees between towers and homes
+blocks_xy = [(t_[0], t_[1]) for t_ in fut["towers"]] + [(h_[0], h_[1]) for h_ in fut["homes"]]
+for zone, n_ in ((ai, 500), (live, 450)):
+    zi = zone.buffer(-6); bx0, bz0, bx1, bz1 = zone.bounds; k = 0; tries = 0
+    while k < n_ and tries < n_ * 30:
+        tries += 1
+        x, z = rnd.uniform(bx0, bx1), rnd.uniform(bz0, bz1)
+        if not zi.contains(Point(x, z)): continue
+        if any(abs(x - bx) < 30 and abs(z - bz) < 30 for bx, bz in blocks_xy): continue
+        fut["trees"].append([round(x, 1), round(z, 1), round(rnd.uniform(5, 9), 1), rnd.randint(0, 1)]); k += 1
 # winding paths through the park
 for k in range(5):
     pts = []
@@ -376,10 +422,10 @@ fut["metroY"] = [round(v, 1) for xy in (from_st(0, -400), from_st(80, 800), from
 fut["metroX"] = [round(v, 1) for xy in (from_st(-L / 2 - 2200, -900), from_st(-L / 2, -260), from_st(L / 2, -260), from_st(L / 2 + 2200, -700)) for v in xy]
 fut["stations"] = [[round(c, 1) for c in from_st(0, -260)], [round(c, 1) for c in from_st(-L / 2 + 200, -260)], [round(c, 1) for c in from_st(L / 2 - 200, -260)], [round(c, 1) for c in from_st(60, 500)]]
 
-xs = B["c"][0::2]; zs = B["c"][1::2]
+xs = [v for r in roads_list_for_bounds for v in r[0::2]]; zs = [v for r in roads_list_for_bounds for v in r[1::2]]
 out = {
-    "origin": [LAT0, LON0], "scale": 10,
-    "bounds": [min(xs) / 10, min(zs) / 10, max(xs) / 10, max(zs) / 10],
+    "origin": [LAT0, LON0], "scale": SCALE,
+    "bounds": [min(xs) / SCALE, min(zs) / SCALE, max(xs) / SCALE, max(zs) / SCALE],
     "runway": {"a": [round(v, 1) for v in from_st(-L / 2, 0)], "b": [round(v, 1) for v in from_st(L / 2, 0)], "w": rw_w, "ang": ang, "L": L,
                 "c": [round(cx, 1), round(cz, 1)], "u": [ux, uz], "n": [nx, nz], "tPark": t_park, "sSplit": s_split},
     "aerodrome": poly_pts(aerodrome), "aero": aero,
@@ -387,7 +433,7 @@ out = {
     "labels": labels, "future": fut,
     "landmarks": {"taipei101": [round(v, 1) for v in TAIPEI101], "grandHotel": [round(v, 1) for v in GRAND],
                    "miramar": [round(v, 1) for v in P(25.08325, 121.55735)]},
-    "areas": {"site": round(site.area / 1e4), "park": round(park.area / 1e4), "ai": round(ai.area / 1e4), "live": round(live.area / 1e4)},
+    "areas": {"aiExtra": round(sum(p.area for p in ai_extra) / 1e4), "site": round(site.area / 1e4), "park": round(park.area / 1e4), "ai": round(ai.area / 1e4), "live": round(live.area / 1e4)},
 }
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 json.dump(out, open(OUT, "w"), ensure_ascii=False, separators=(",", ":"))

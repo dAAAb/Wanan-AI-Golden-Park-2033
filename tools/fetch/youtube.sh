@@ -11,8 +11,19 @@ log() { echo "$*" | tee -a "$OUT/fetch_log.txt"; }
 
 have_audio() { ls /tmp/yt/audio.* >/dev/null 2>&1 && [ "$(stat -c %s $(ls /tmp/yt/audio.* | head -1))" -gt 500000 ]; }
 
+# 0a) an audio/video file uploaded to research/youtube/input/ (drag & drop on GitHub)
+IN=$(ls research/youtube/input/* 2>/dev/null | grep -Ei '\.(mp3|m4a|wav|mp4|webm|mov|aac|ogg|opus)$' | head -1)
+if [ -n "$IN" ]; then log "== using uploaded file $IN"; cp "$IN" "/tmp/yt/audio.${IN##*.}"; fi
+# 0b) a direct media URL given to workflow_dispatch
+if ! have_audio && [ -n "${MEDIA_URL:-}" ]; then log "== downloading MEDIA_URL"; yt-dlp -f "bestaudio/best" -o "/tmp/yt/audio.%(ext)s" "$MEDIA_URL" || curl -fL -o /tmp/yt/audio.media "$MEDIA_URL"; fi
+# 0c) YouTube with cookies stored as the repository secret YT_COOKIES (Netscape cookies.txt)
+if ! have_audio && [ -n "${YT_COOKIES:-}" ]; then
+  log "== yt-dlp with YT_COOKIES secret"; printf '%s' "$YT_COOKIES" > /tmp/yt/cookies.txt
+  yt-dlp --cookies /tmp/yt/cookies.txt -f "bestaudio/best" -o "/tmp/yt/audio.%(ext)s" "$URL" 2>&1 | tail -3 | tee -a "$OUT/fetch_log.txt"
+fi
+
 # 1) Invidious mirrors
-INV=$(curl -s -m 30 "https://api.invidious.io/instances.json?sort_by=health" | python3 -c "
+have_audio || INV=$(curl -s -m 30 "https://api.invidious.io/instances.json?sort_by=health" | python3 -c "
 import json,sys
 try:
   d=json.load(sys.stdin)
@@ -42,7 +53,7 @@ PY
 done
 
 # 2) Piped mirrors
-if ! have_audio; then
+if ! have_audio && [ -z "${SKIP_MIRRORS:-}" ]; then
   PIPED=$(curl -s -m 30 "https://piped-instances.kavin.rocks/" | python3 -c "
 import json,sys
 try: print(' '.join(i['api_url'] for i in json.load(sys.stdin)))

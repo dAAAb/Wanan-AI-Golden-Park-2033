@@ -15,7 +15,7 @@ def run(name, body):
     if os.path.exists(f"research/osm/{name}.json.gz"):
         print("have", name); return True
     if ONLY and ONLY != name: return False
-    q = f"[out:json][timeout:300][maxsize:1073741824];\n{body}\nout tags geom qt;"
+    q = f"[out:json][timeout:300][maxsize:1073741824];\n{body}\nout body geom qt;"
     for attempt in range(3):
         for ep in ENDPOINTS:
             try:

@@ -73,10 +73,7 @@ if segs:
 <p class="badge ok">自動語音辨識（Whisper）＋繁體轉換，可能有少數錯字，點時間可跳到影片該段。</p>
 <div class="segs">{verb}</div></section>'''
 else:
-    verb_block = '''<section class="block" id="verbatim"><h2>影片語音逐字稿</h2>
-<p class="badge wait">⏳ 影片逐字聽打版製作中</p>
-<p>YouTube 目前阻擋了自動下載音訊，所以這裡先放<strong>市府新聞稿版的致詞全文</strong>（在下方）。新聞稿是市府發布的官方文字版本；記者會現場的口語用字可能略有不同。</p>
-<p>聽打版完成後，會自動出現在這裡，每一句都附時間碼，點一下就能跳到影片該段。</p></section>'''
+    verb_block = '''<p class="badge wait" id="verbatim">⏳ 影片逐字聽打版製作中。YouTube 目前擋下自動下載，所以下方先放<strong>市府新聞稿版的致詞全文</strong>（市府發布的官方文字版本，現場口語可能略有不同）。聽打版完成後會自動加在這裡，每句附時間碼。</p>'''
 
 page = f'''<!doctype html>
 <html lang="zh-Hant-TW">

@@ -1,38 +1,9 @@
 url https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/3d/index.html title External Content Notice | rawgit.hack
-body  rawgit.hack | Status Source code Report abuse | Code using any language, framework, and library. Package it as a container and deploy. | ads via Carbon |  | One more step | This HTML page is hosted on raw.githubusercontent.com and proxied as-is. | rawgit.hack does not review third-party content. |  | You're going to open:  | Open the page | Go to homepage |  | Not sure about the source? Avoid entering passwords, personal 
-t=13.331s ready=false load=External Content Notice | rawgit.hack
-t=23.336s ready=false load=External Content Notice | rawgit.hack
-t=33.338s ready=false load=External Content Notice | rawgit.hack
-t=43.428s ready=false load=External Content Notice | rawgit.hack
-t=53.431s ready=false load=External Content Notice | rawgit.hack
-t=63.432s ready=false load=External Content Notice | rawgit.hack
-t=73.434s ready=false load=External Content Notice | rawgit.hack
-t=83.437s ready=false load=External Content Notice | rawgit.hack
-t=93.439s ready=false load=External Content Notice | rawgit.hack
-t=103.442s ready=false load=External Content Notice | rawgit.hack
-t=113.443s ready=false load=External Content Notice | rawgit.hack
-t=123.445s ready=false load=External Content Notice | rawgit.hack
-t=133.448s ready=false load=External Content Notice | rawgit.hack
-t=143.451s ready=false load=External Content Notice | rawgit.hack
-t=153.454s ready=false load=External Content Notice | rawgit.hack
-t=163.456s ready=false load=External Content Notice | rawgit.hack
-t=173.458s ready=false load=External Content Notice | rawgit.hack
-t=183.459s ready=false load=External Content Notice | rawgit.hack
-t=193.461s ready=false load=External Content Notice | rawgit.hack
-t=203.463s ready=false load=External Content Notice | rawgit.hack
-t=213.466s ready=false load=External Content Notice | rawgit.hack
-t=223.467s ready=false load=External Content Notice | rawgit.hack
-t=233.469s ready=false load=External Content Notice | rawgit.hack
-t=243.471s ready=false load=External Content Notice | rawgit.hack
-t=253.473s ready=false load=External Content Notice | rawgit.hack
-t=263.475s ready=false load=External Content Notice | rawgit.hack
-t=273.476s ready=false load=External Content Notice | rawgit.hack
-t=283.478s ready=false load=External Content Notice | rawgit.hack
-t=293.478s ready=false load=External Content Notice | rawgit.hack
-t=303.481s ready=false load=External Content Notice | rawgit.hack
+body  rawgit.hack | Status Source code Report abuse | MongoDB Atlas is the vector database developers prefer. Get started building for free. | www.mongodb.com | Ads by EthicalAds |  | One more step | This HTML page is hosted on raw.githubusercontent.com and proxied as-is. | rawgit.hack does not review third-party content. |  | You're going to open:  | Open the page | Go to homepage |  | Not sure about the source? Avoid entering p
+githack notice page -> clicking "Open the page"
+after click url https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/3d/index.html title 臺北 2033：松機變身 AI 園區 3D 體驗
+t=20.369s ready=true load=完成！按「開始任務」上路
 errors: []
-start click failed page.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator('#btnStart')
-
-all errors: []
+site title AI黃金世紀，從臺北開始｜松機變身臺北AI園區
+transcript title 記者會逐字稿｜AI黃金世紀，就從臺北開始（2026/10/08）
+all errors: ["warning: Unrecognized feature: 'web-share'.","warning: Failed to create WebGPU Context Provider"]

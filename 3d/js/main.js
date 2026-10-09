@@ -833,10 +833,15 @@ function updateCutscene(dt) {
 // ---------------- tour ----------------
 function startTour() {
   if (!S.D) return;
-  S.prevMode = S.mode === 'tour' ? S.prevMode : S.mode; S.mode = 'tour'; S.tour = { t: 0 };
+  if (S.mode !== 'tour') { S.prevMode = S.mode; S.prevYear = S.yearTarget; }
+  S.mode = 'tour'; S.tour = { t: 0 };
   S.yearTarget = 0; $('caption').hidden = false; toast('導覽中：按任一工具列按鈕可離開', 2500);
 }
-function endTour() { S.mode = S.prevMode && S.prevMode !== 'tour' && S.prevMode !== 'cutscene' ? S.prevMode : 'drive'; $('caption').hidden = true; }
+function endTour() {
+  S.mode = S.prevMode && S.prevMode !== 'tour' && S.prevMode !== 'cutscene' && S.prevMode !== 'intro' ? S.prevMode : 'drive';
+  if (S.mission === 0 && S.prevYear !== undefined) S.yearTarget = S.prevYear;
+  $('caption').hidden = true;
+}
 function updateTour(dt) {
   const T = S.tour; T.t += dt;
   const t = T.t;

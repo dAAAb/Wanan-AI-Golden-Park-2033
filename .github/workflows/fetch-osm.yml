@@ -19,4 +19,4 @@ jobs:
           python-version: '3.12'
       - run: pip install requests
       - run: python tools/fetch/osm.py
-      - run: bash tools/fetch/commit.sh "chore(data): fetch OpenStreetMap data around Songshan Airport" research/osm
+      - run: 'bash tools/fetch/commit.sh "chore(data): fetch OpenStreetMap data around Songshan Airport" research/osm'

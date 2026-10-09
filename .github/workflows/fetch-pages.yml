@@ -19,4 +19,4 @@ jobs:
           python-version: '3.12'
       - run: pip install requests trafilatura
       - run: python tools/fetch/pages.py
-      - run: bash tools/fetch/commit.sh "chore(research): archive source pages" research/pages
+      - run: 'bash tools/fetch/commit.sh "chore(research): archive source pages" research/pages'

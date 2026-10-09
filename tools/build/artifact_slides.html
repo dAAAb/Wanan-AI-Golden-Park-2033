@@ -104,7 +104,8 @@ kbd{font-family:inherit;font-size:.85em;border:1px solid var(--line);border-radi
 
 <script>
 const SLIDES = /*SLIDES*/[];
-const FILES = { pptx: ['AI-Golden-Century-Taipei.pptx', '__PPTX_SRC__'], pdf: ['AI-Golden-Century-Taipei.pdf', '__PDF_SRC__'] };
+// the PDF ships with the page; a .pptx can't be attached to an artifact, so that button stays a link to GitHub
+const FILES = { pdf: ['AI-Golden-Century-Taipei.pdf', '__PDF_SRC__'] };
 const $ = (id) => document.getElementById(id);
 const N = SLIDES.length;
 let cur = 0;
@@ -168,7 +169,7 @@ go(start >= 1 && start <= N ? start - 1 : 0);
   let dl = null;
   try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
   if (!dl) return;
-  for (const [id, key] of [['getPptx', 'pptx'], ['getPdf', 'pdf']]) {
+  for (const [id, key] of [['getPdf', 'pdf']]) {
     const a = $(id);
     const onClick = async (e) => {
       e.preventDefault();

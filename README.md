@@ -11,8 +11,9 @@
 | 🌐 大字版互動網站 | https://claude.ai/artifact/8K5y9QidbXzNhXdy4qw3XF |
 | 🚕 3D 臺北 GTA 沉浸體驗 | https://claude.ai/artifact/Tq7QNLoTAKGTSxAHkZiysG |
 | 📜 記者會逐字稿 | https://claude.ai/artifact/Gtpv4cLdzdZ4EuogomFQ7J |
+| 📊 簡報（線上翻閱＋PDF 下載；PPTX 由 GitHub 下載） | https://claude.ai/artifact/9dBaPN8bmqUmXCxnEyShDX |
 
-> Artifact 版由 `tools/build/artifact_bundle.py` 產生（網址記在 `tools/build/artifact_urls.json`）：YouTube 影片改為連結、PPT／PDF 下載改連到 GitHub、three.js 從 jsDelivr 載入。
+> Artifact 版由 `tools/build/artifact_bundle.py` 產生（網址記在 `tools/build/artifact_urls.json`）：YouTube 影片改為連結、three.js 從 jsDelivr 載入；簡報頁內附 PDF，.pptx 因 Artifact 不能夾帶 Office 檔，改由 GitHub 下載。
 
 **GitHub（githack）版**
 

@@ -152,7 +152,7 @@ def deck_notes():
 
 
 def build_slides():
-    """Slide viewer: every page as an image, notes, and the real PPTX/PDF files for download."""
+    """Slide viewer: every page as an image, notes, PDF download (PPTX from GitHub)."""
     b = "slides"
     d = os.path.join(OUT, b); os.makedirs(os.path.join(d, "img"), exist_ok=True); os.makedirs(os.path.join(d, "thumb"), exist_ok=True)
     pdf = os.path.join(ROOT, DECK + ".pdf")
@@ -165,12 +165,12 @@ def build_slides():
     page = read("tools/build/artifact_slides.html")
     page = page.replace("/*SLIDES*/[]", json.dumps(data, ensure_ascii=False))
     for k, v in {"__GH_PPTX__": f"{RAW}/{DECK}.pptx", "__GH_PDF__": f"{GH}/blob/{BR}/{DECK}.pdf",
-                 "__PPTX_SRC__": "files/AI-Golden-Century-Taipei.pptx.zip", "__PDF_SRC__": "files/AI-Golden-Century-Taipei.pdf",
+                 "__PDF_SRC__": "files/AI-Golden-Century-Taipei.pdf",
                  "__U_MAIN__": U["main"], "__U_3D__": U["3d"], "__U_TRANSCRIPT__": U["transcript"]}.items():
         page = page.replace(k, v)
     open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(page)
-    # a .pptx is a zip; it is published under .zip (a standard web type) and saved back as .pptx
-    files = [copy(DECK + ".pptx", b, "files/AI-Golden-Century-Taipei.pptx.zip"), copy(DECK + ".pdf", b, "files/AI-Golden-Century-Taipei.pdf")]
+    # artifacts can't carry a .pptx: the PDF ships with the page, the PPTX button links to GitHub
+    files = [copy(DECK + ".pdf", b, "files/AI-Golden-Century-Taipei.pdf")]
     return files + [f"img/{f}" for f in imgs] + [f"thumb/{f}" for f in thumbs]
 
 

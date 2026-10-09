@@ -1,8 +1,8 @@
 url https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/3d/index.html title External Content Notice | rawgit.hack
-body  rawgit.hack | Status Source code Report abuse | MongoDB Atlas is the vector database developers prefer. Get started building for free. | www.mongodb.com | Ads by EthicalAds |  | One more step | This HTML page is hosted on raw.githubusercontent.com and proxied as-is. | rawgit.hack does not review third-party content. |  | You're going to open:  | Open the page | Go to homepage |  | Not sure about the source? Avoid entering p
+body  rawgit.hack | Status Source code Report abuse | Cut Data Warehouse Costs by 54% | Sub-second maintenance. 2x read/write performance. Built-in vector search for AI apps. | ads via Carbon |  | One more step | This HTML page is hosted on raw.githubusercontent.com and proxied as-is. | rawgit.hack does not review third-party content. |  | You're going to open:  | Open the page | Go to homepage |  | Not sure about the source? Avo
 githack notice page -> clicking "Open the page"
 after click url https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/3d/index.html title 臺北 2033：松機變身 AI 園區 3D 體驗
-t=20.369s ready=true load=完成！按「開始任務」上路
+t=19.547s ready=true load=完成！按「開始任務」上路
 errors: []
 site title AI黃金世紀，從臺北開始｜松機變身臺北AI園區
 transcript title 記者會逐字稿｜AI黃金世紀，就從臺北開始（2026/10/08）

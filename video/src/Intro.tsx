@@ -16,15 +16,15 @@ const SCENES: Record<string, React.FC<SceneProps>> = {
 };
 
 // sound effects per scene: [file, frame within the scene, volume]
-const sfx = (id: string, d: number, vo: number, sp: number): [string, number, number][] => {
+const sfx = (id: string, d: number, vo: number, sp: number, m: Record<string, number>): [string, number, number][] => {
   switch (id) {
-    case 's1-hook': { const flip = vo + Math.round(sp * 0.5); return [['shimmer-sparkle-sweep', 0, 0.45], ['clock-knob-spin', flip, 0.7], ['bass-hit-short', flip + 16, 0.7]]; }
+    case 's1-hook': { const flip = m.flip ?? vo + Math.round(sp * 0.5); return [['shimmer-sparkle-sweep', 0, 0.45], ['clock-knob-spin', flip, 0.7], ['bass-hit-short', flip + 16, 0.7]]; }
     case 's2-origin': return [['swoosh-quick', 4, 0.5]];
-    case 's3-idea': return [['whoosh-fast', vo + 4, 0.35], ['whoosh-fast', vo + Math.round(sp * 0.35), 0.35], ['whoosh-fast', vo + Math.round(sp * 0.62), 0.35], ['bass-hit-futuristic', vo + Math.round(sp * 0.8), 0.6]];
+    case 's3-idea': { const a = m.a ?? vo + 4; return [['whoosh-fast', a, 0.35], ['whoosh-fast', a + 24, 0.35], ['whoosh-fast', m.b ?? vo + Math.round(sp * 0.62), 0.35], ['bass-hit-futuristic', m.c ?? vo + Math.round(sp * 0.8), 0.6]]; }
     case 's4-prompt': { const end = Math.round(d * 0.62); const out: [string, number, number][] = []; for (let t = 8; t < end - 20; t += 54) out.push(['typewriter-digital', t, 0.22]); out.push(['hitech-bleep', end + 8, 0.6]); return out; }
-    case 's5-build': return [['data-compute', 6, 0.3], ['transition-snap', Math.round(d * 0.5), 0.5]];
-    case 's6-bug': return [['glitch-static', 4, 0.45], ['glitch-static', 40, 0.3], ['sweep-scifi-fast', Math.round(d * 0.3), 0.45], ['sparkle-wand', Math.round(d * 0.74) + 10, 0.55]];
-    case 's7-demo': return [['power-up-electronic', Math.round(d * 0.2), 0.4], ['whoosh-fast', Math.round(d * 0.62), 0.4]];
+    case 's5-build': return [['data-compute', 6, 0.3], ['transition-snap', (m.b ?? Math.round(d * 0.5)) - 6, 0.5]];
+    case 's6-bug': return [['glitch-static', 4, 0.45], ['glitch-static', 40, 0.3], ['sweep-scifi-fast', (m.b ?? Math.round(d * 0.3)) - 4, 0.45], ['sparkle-wand', (m.c ?? Math.round(d * 0.74)) + 4, 0.55]];
+    case 's7-demo': return [['power-up-electronic', (m.c1 ?? Math.round(d * 0.2)) + 10, 0.4], ['whoosh-fast', (m.c2 ?? Math.round(d * 0.62)) - 8, 0.4]];
     case 's8-deliver': return [['swoosh-quick', Math.round(d / 3), 0.4], ['swoosh-quick', Math.round((2 * d) / 3), 0.4]];
     case 's9-cta': return [['bass-hit-futuristic', 4, 0.6], ['sparkle-wand', 12, 0.5]];
     default: return [];
@@ -44,10 +44,10 @@ export const Intro: React.FC<IntroProps> = ({ modelLabel, bgm }) => {
         const Scene = SCENES[s.id];
         return (
           <Sequence key={s.id} from={s.from} durationInFrames={s.frames} name={s.id}>
-            <Scene dur={s.frames} vo={s.voFrom} speech={s.speechFrames} modelLabel={modelLabel} />
+            <Scene dur={s.frames} vo={s.voFrom} speech={s.speechFrames} modelLabel={modelLabel} marks={s.marks as Record<string, number>} />
             <Subtitle subs={s.subs} />
             {s.vo ? <Sequence from={s.voFrom} name="voice"><Audio src={staticFile(s.vo)} /></Sequence> : null}
-            {sfx(s.id, s.frames, s.voFrom, s.speechFrames).map(([file, at, vol], k) => (
+            {sfx(s.id, s.frames, s.voFrom, s.speechFrames, s.marks as Record<string, number>).map(([file, at, vol], k) => (
               <Sequence key={k} from={Math.max(0, at)} name={file}><Audio src={staticFile(`sfx/${file}.mp3`)} volume={vol} /></Sequence>
             ))}
             {s.from > 0 ? <Audio src={staticFile('sfx/transition-snap.mp3')} volume={0.3} /> : null}

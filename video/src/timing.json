@@ -1,262 +1,289 @@
 {
  "fps": 30,
- "hasVoice": false,
- "totalFrames": 2937,
+ "hasVoice": true,
+ "totalFrames": 2699,
  "scenes": [
   {
    "id": "s1-hook",
    "from": 0,
-   "frames": 329,
+   "frames": 271,
    "voFrom": 15,
-   "speechFrames": 300,
-   "vo": null,
+   "speechFrames": 242,
+   "vo": "vo/s1-hook.mp3",
    "subs": [
     {
      "text": "10/9 下午 2:20 丟出幾句 prompt →",
      "from": 15,
-     "to": 185
+     "to": 130
     },
     {
-     "text": "4:06",
-     "from": 185,
-     "to": 217
-    },
-    {
-     "text": "一座可以開車的 3D 臺北上線",
-     "from": 217,
-     "to": 315
+     "text": "4:06 一座可以開車的 3D 臺北上線了",
+     "from": 130,
+     "to": 257
     }
-   ]
+   ],
+   "marks": {
+    "flip": 124
+   }
   },
   {
    "id": "s2-origin",
-   "from": 329,
-   "frames": 347,
+   "from": 271,
+   "frames": 310,
    "voFrom": 8,
-   "speechFrames": 326,
-   "vo": null,
+   "speechFrames": 289,
+   "vo": "vo/s2-origin.mp3",
    "subs": [
     {
      "text": "起因是網友留言：",
-     "from": 8,
-     "to": 62
+     "from": 12,
+     "to": 60
     },
     {
-     "text": "希望把蔣萬安市長「AI黃金世紀」的演講做成逐字稿和簡報—",
-     "from": 62,
-     "to": 252
+     "text": "希望把蔣萬安市長「AI黃金世紀」的演講",
+     "from": 60,
+     "to": 174
     },
     {
-     "text": "—",
-     "from": 252,
-     "to": 259
+     "text": "做成逐字稿和簡報",
+     "from": 174,
+     "to": 233
     },
     {
      "text": "因為很多人沒耐心看文字",
-     "from": 259,
-     "to": 334
+     "from": 233,
+     "to": 297
     }
-   ]
+   ],
+   "marks": {
+    "hl0": 187,
+    "hl1": 211,
+    "hl2": 261
+   }
   },
   {
    "id": "s3-idea",
-   "from": 676,
-   "frames": 275,
+   "from": 581,
+   "frames": 252,
    "voFrom": 8,
-   "speechFrames": 254,
-   "vo": null,
+   "speechFrames": 231,
+   "vo": "vo/s3-idea.mp3",
    "subs": [
     {
      "text": "我想：",
-     "from": 8,
-     "to": 24
+     "from": 9,
+     "to": 30
     },
     {
      "text": "聽說 Claude 做 3D 網站很強",
-     "from": 24,
-     "to": 138
+     "from": 30,
+     "to": 115
     },
     {
-     "text": "網友也做過 GTA 台北—",
-     "from": 138,
-     "to": 211
-    },
-    {
-     "text": "—",
-     "from": 211,
-     "to": 217
+     "text": "網友也做過 GTA 台北",
+     "from": 115,
+     "to": 203
     },
     {
      "text": "那就一次做到底！",
-     "from": 217,
-     "to": 262
+     "from": 203,
+     "to": 239
     }
-   ]
+   ],
+   "marks": {
+    "a": 35,
+    "b": 115,
+    "c": 195
+   }
   },
   {
    "id": "s4-prompt",
-   "from": 951,
-   "frames": 306,
+   "from": 833,
+   "frames": 300,
    "voFrom": 9,
-   "speechFrames": 117,
-   "vo": null,
+   "speechFrames": 73,
+   "vo": "vo/s4-prompt.mp3",
    "subs": [
     {
      "text": "這是我完整的 prompt",
      "from": 9,
-     "to": 100
+     "to": 57
     },
     {
      "text": "就這幾句",
-     "from": 100,
-     "to": 126
+     "from": 57,
+     "to": 82
     }
-   ]
+   ],
+   "marks": {}
   },
   {
    "id": "s5-build",
-   "from": 1257,
-   "frames": 393,
+   "from": 1133,
+   "frames": 300,
    "voFrom": 8,
-   "speechFrames": 372,
-   "vo": null,
+   "speechFrames": 272,
+   "vo": "vo/s5-build.mp3",
    "subs": [
     {
      "text": "接著全交給 AI：",
      "from": 8,
-     "to": 61
+     "to": 58
     },
     {
      "text": "自己抓 OpenStreetMap",
-     "from": 61,
-     "to": 169
+     "from": 58,
+     "to": 94
     },
     {
      "text": "把 6 萬棟真實建築蓋成 3D",
-     "from": 169,
-     "to": 265
+     "from": 94,
+     "to": 200
     },
     {
      "text": "再寫 shader 讓窗戶在夜裡亮起來",
-     "from": 265,
-     "to": 379
+     "from": 200,
+     "to": 279
     }
-   ]
+   ],
+   "marks": {
+    "b": 193
+   }
   },
   {
    "id": "s6-bug",
-   "from": 1650,
-   "frames": 393,
+   "from": 1433,
+   "frames": 421,
    "voFrom": 8,
-   "speechFrames": 372,
-   "vo": null,
+   "speechFrames": 366,
+   "vo": "vo/s6-bug.mp3",
    "subs": [
     {
      "text": "我當 QA：",
      "from": 8,
-     "to": 47
+     "to": 38
     },
     {
      "text": "「啟動未來會閃黑色方塊」→",
-     "from": 47,
-     "to": 131
+     "from": 38,
+     "to": 123
     },
     {
-     "text": "它追到是 three.js 法向量除以零變成 NaN、被光暈放大",
-     "from": 131,
-     "to": 347
+     "text": "它追到：",
+     "from": 123,
+     "to": 150
+    },
+    {
+     "text": "three.js 法向量除以零 →",
+     "from": 150,
+     "to": 235
+    },
+    {
+     "text": "變成 NaN、被光暈放大 →",
+     "from": 235,
+     "to": 355
     },
     {
      "text": "幾行就修好",
-     "from": 347,
-     "to": 379
+     "from": 355,
+     "to": 373
     }
-   ]
+   ],
+   "marks": {
+    "b": 123,
+    "c": 344
+   }
   },
   {
    "id": "s7-demo",
-   "from": 2043,
-   "frames": 357,
+   "from": 1854,
+   "frames": 330,
    "voFrom": 8,
-   "speechFrames": 313,
-   "vo": null,
+   "speechFrames": 277,
+   "vo": "vo/s7-demo.mp3",
    "subs": [
     {
      "text": "開小黃到松山機場",
-     "from": 8,
-     "to": 65
+     "from": 15,
+     "to": 68
     },
     {
      "text": "按下時光機：",
-     "from": 65,
-     "to": 103
+     "from": 68,
+     "to": 102
     },
     {
      "text": "跑道消失",
-     "from": 103,
-     "to": 135
+     "from": 102,
+     "to": 129
     },
     {
      "text": "300 公頃 AI 園區、110 公頃中央公園一棟棟長出來",
-     "from": 135,
-     "to": 321
+     "from": 129,
+     "to": 284
     }
-   ]
+   ],
+   "marks": {
+    "c1": 71,
+    "c2": 187
+   }
   },
   {
    "id": "s8-deliver",
-   "from": 2399,
+   "from": 2184,
    "frames": 210,
    "voFrom": 8,
-   "speechFrames": 189,
-   "vo": null,
+   "speechFrames": 168,
+   "vo": "vo/s8-deliver.mp3",
    "subs": [
     {
      "text": "懶人包、逐字稿、簡報",
-     "from": 8,
-     "to": 79
+     "from": 11,
+     "to": 76
     },
     {
      "text": "手機都能看",
-     "from": 79,
-     "to": 118
+     "from": 76,
+     "to": 111
     },
     {
      "text": "連網域都請 AI 接好了",
-     "from": 118,
-     "to": 197
+     "from": 111,
+     "to": 175
     }
-   ]
+   ],
+   "marks": {}
   },
   {
    "id": "s9-cta",
-   "from": 2609,
-   "frames": 328,
+   "from": 2394,
+   "frames": 305,
    "voFrom": 8,
-   "speechFrames": 254,
-   "vo": null,
+   "speechFrames": 231,
+   "vo": "vo/s9-cta.mp3",
    "subs": [
     {
      "text": "ai2033.taipei",
-     "from": 8,
-     "to": 109
+     "from": 14,
+     "to": 79
     },
     {
      "text": "程式碼全部開源",
-     "from": 109,
-     "to": 167
+     "from": 79,
+     "to": 145
     },
     {
      "text": "AI黃金世紀",
-     "from": 167,
-     "to": 218
+     "from": 145,
+     "to": 201
     },
     {
      "text": "從臺北開始！",
-     "from": 218,
-     "to": 262
+     "from": 201,
+     "to": 239
     }
-   ]
+   ],
+   "marks": {}
   }
  ]
 }

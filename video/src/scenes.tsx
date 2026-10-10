@@ -4,13 +4,13 @@ import { C, MONO, SANS } from './theme';
 import { Bg, Chip, clamp, CodePanel, ease, Footage, Kicker, Phone, Roll, Shot, usePop, useRamp } from './ui';
 import { CODE_FIX, CODE_GLSL, CODE_NAN, CODE_OSM, COMMENT, COMMENT_HL, PROMPT } from './content';
 
-export type SceneProps = { dur: number; vo: number; speech: number; modelLabel: string };
+export type SceneProps = { dur: number; vo: number; speech: number; modelLabel: string; marks: Record<string, number> };
 const big = (size: number, color = C.white): React.CSSProperties => ({ fontFamily: SANS, fontWeight: 900, fontSize: size, lineHeight: 1.12, color, textAlign: 'center', textWrap: 'balance' } as React.CSSProperties);
 
 // 1 — the hook: 14:20 prompt -> 16:06 live, over the time machine
-export const S1Hook: React.FC<SceneProps> = ({ vo, speech }) => {
+export const S1Hook: React.FC<SceneProps> = ({ vo, speech, marks }) => {
   const f = useCurrentFrame();
-  const flipAt = vo + Math.round(speech * 0.5);
+  const flipAt = marks.flip ?? vo + Math.round(speech * 0.5);
   const card = usePop(0, 13);
   const flip = interpolate(f, [flipAt, flipAt + 22], [0, 1], clamp);
   const badge = usePop(flipAt + 16, 10, 0.6);
@@ -35,10 +35,10 @@ export const S1Hook: React.FC<SceneProps> = ({ vo, speech }) => {
 };
 
 // 2 — the comment that started it
-export const S2Origin: React.FC<SceneProps> = ({ vo, speech }) => {
+export const S2Origin: React.FC<SceneProps> = ({ vo, speech, marks }) => {
   const f = useCurrentFrame();
   const card = usePop(4, 15);
-  const hlAt = (k: number) => vo + Math.round(speech * [0.25, 0.45, 0.72][k]);
+  const hlAt = (k: number) => marks['hl' + k] ?? vo + Math.round(speech * [0.25, 0.45, 0.72][k]);
   const text = COMMENT.join('\n');
   // paint each highlighted phrase with a marker sweep
   const parts: React.ReactNode[] = [];
@@ -74,11 +74,11 @@ export const S2Origin: React.FC<SceneProps> = ({ vo, speech }) => {
 };
 
 // 3 — the idea: three pieces snap together
-export const S3Idea: React.FC<SceneProps> = ({ vo, speech, modelLabel }) => {
+export const S3Idea: React.FC<SceneProps> = ({ vo, speech, modelLabel, marks }) => {
   const f = useCurrentFrame();
-  const at = [vo + 4, vo + Math.round(speech * 0.35), vo + Math.round(speech * 0.62)];
+  const at = [marks.a ?? vo + 4, (marks.a ?? vo) + 24, marks.b ?? vo + Math.round(speech * 0.62)];
   const pops = at.map((a) => usePop(a, 12));
-  const merge = usePop(vo + Math.round(speech * 0.8), 11);
+  const merge = usePop(marks.c ?? vo + Math.round(speech * 0.8), 11);
   const items: [string, string, string][] = [['🤖', modelLabel, '寫 3D 網站很強'], ['🌐', 'three.js', '3D 臺北'], ['🚕', 'GTA 台北', '網友的經典作品']];
   return (
     <AbsoluteFill>
@@ -135,9 +135,9 @@ export const S4Prompt: React.FC<SceneProps> = ({ dur }) => {
 };
 
 // 5 — OSM -> 60,000 buildings, then the window shader
-export const S5Build: React.FC<SceneProps> = ({ dur }) => {
+export const S5Build: React.FC<SceneProps> = ({ dur, marks }) => {
   const f = useCurrentFrame();
-  const half = Math.round(dur * 0.5);
+  const half = (marks.b ?? Math.round(dur * 0.5)) - 6;
   const count = Math.round(interpolate(f, [20, half - 20], [0, 60000], { ...clamp, easing: ease }));
   const b = useRamp(half - 8, half + 8);
   const night = useRamp(half + 20, dur);
@@ -171,9 +171,9 @@ export const S5Build: React.FC<SceneProps> = ({ dur }) => {
 };
 
 // 6 — the black-block bug and the fix
-export const S6Bug: React.FC<SceneProps> = ({ dur }) => {
+export const S6Bug: React.FC<SceneProps> = ({ dur, marks }) => {
   const f = useCurrentFrame();
-  const a = Math.round(dur * 0.3), c = Math.round(dur * 0.74);
+  const a = (marks.b ?? Math.round(dur * 0.3)) - 4, c = (marks.c ?? Math.round(dur * 0.74)) - 6;
   const bubble = usePop(4, 13);
   const toB = useRamp(a - 6, a + 8);
   const toC = useRamp(c - 6, c + 8);
@@ -214,9 +214,9 @@ export const S6Bug: React.FC<SceneProps> = ({ dur }) => {
 };
 
 // 7 — the real thing: drive, time machine, central park
-export const S7Demo: React.FC<SceneProps> = ({ dur }) => {
+export const S7Demo: React.FC<SceneProps> = ({ dur, marks }) => {
   const f = useCurrentFrame();
-  const c1 = Math.round(dur * 0.2), c2 = Math.round(dur * 0.62);
+  const c1 = (marks.c1 ?? Math.round(dur * 0.2)) + 10, c2 = (marks.c2 ?? Math.round(dur * 0.62)) - 8;
   const t300 = usePop(c1 + 40, 11), t110 = usePop(c2 + 15, 11);
   return (
     <AbsoluteFill>

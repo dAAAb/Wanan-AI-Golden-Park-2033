@@ -4,7 +4,10 @@
 
 ## 流程
 
-1. **旁白**：`narration.json` 是逐場景的旁白（`text` 給語音念、`sub` 是字幕）。推送後 GitHub Actions 的 `tts` 工作流程會用 ElevenLabs（專案擁有者的聲音、最新 v4 模型）產生 `public/vo/*.mp3` 與 `timing.json` 並自動提交。需要 repo secret `ELEVENLABS_API_KEY`。
+1. **旁白**：`narration.json` 是逐場景的旁白（`text` 給語音念、`sub` 是字幕）。用 ElevenLabs（專案擁有者的聲音、`eleven_v4`）把整段一次念完、場景之間用 `[pause]` 隔開，再用 Scribe 對齊出逐字時間：
+   - 整段音檔依 `[pause]` 切成 `public/vo/<scene>.mp3`，切點記在 `public/vo/source.json`
+   - 對齊結果存成 `public/vo/words.json`（字幕與畫面節拍就靠它對到嘴型）
+   - 旁白檔不進 git（`public/vo/` 已忽略）
 2. **3D 畫面**：`public/clips/*.mp4` 由 `tools/build/record_demo.mjs` 錄的逐格畫面切出（不進 git）：
    ```bash
    node tools/build/record_demo.mjs /tmp/frames
@@ -13,7 +16,7 @@
      ffmpeg -y -framerate 30 -start_number $2 -i /tmp/frames/f%05d.jpg -frames:v $3 -c:v libx264 -crf 18 -pix_fmt yuv420p $1.mp4; done
    ```
 3. **網站截圖**：`node video/scripts/capture.mjs`（先在 repo 根目錄 `npx http-server -p 8123 .`）。
-4. **時間軸**：`node scripts/timing.mjs` 依實際旁白長度（沒有旁白時用字數估算）產生 `src/timing.json`。
+4. **時間軸**：`node scripts/timing.mjs` 依實際旁白長度與逐字時間產生 `src/timing.json`（每段字幕的進出點、以及「四點零六分」「它追到」等畫面節拍）；沒有旁白時用字數估算。
 5. **輸出**：
    ```bash
    cd video && npm install

@@ -1,0 +1,262 @@
+{
+ "fps": 30,
+ "hasVoice": false,
+ "totalFrames": 2937,
+ "scenes": [
+  {
+   "id": "s1-hook",
+   "from": 0,
+   "frames": 329,
+   "voFrom": 15,
+   "speechFrames": 300,
+   "vo": null,
+   "subs": [
+    {
+     "text": "10/9 下午 2:20 丟出幾句 prompt →",
+     "from": 15,
+     "to": 185
+    },
+    {
+     "text": "4:06",
+     "from": 185,
+     "to": 217
+    },
+    {
+     "text": "一座可以開車的 3D 臺北上線",
+     "from": 217,
+     "to": 315
+    }
+   ]
+  },
+  {
+   "id": "s2-origin",
+   "from": 329,
+   "frames": 347,
+   "voFrom": 8,
+   "speechFrames": 326,
+   "vo": null,
+   "subs": [
+    {
+     "text": "起因是網友留言：",
+     "from": 8,
+     "to": 62
+    },
+    {
+     "text": "希望把蔣萬安市長「AI黃金世紀」的演講做成逐字稿和簡報—",
+     "from": 62,
+     "to": 252
+    },
+    {
+     "text": "—",
+     "from": 252,
+     "to": 259
+    },
+    {
+     "text": "因為很多人沒耐心看文字",
+     "from": 259,
+     "to": 334
+    }
+   ]
+  },
+  {
+   "id": "s3-idea",
+   "from": 676,
+   "frames": 275,
+   "voFrom": 8,
+   "speechFrames": 254,
+   "vo": null,
+   "subs": [
+    {
+     "text": "我想：",
+     "from": 8,
+     "to": 24
+    },
+    {
+     "text": "聽說 Claude 做 3D 網站很強",
+     "from": 24,
+     "to": 138
+    },
+    {
+     "text": "網友也做過 GTA 台北—",
+     "from": 138,
+     "to": 211
+    },
+    {
+     "text": "—",
+     "from": 211,
+     "to": 217
+    },
+    {
+     "text": "那就一次做到底！",
+     "from": 217,
+     "to": 262
+    }
+   ]
+  },
+  {
+   "id": "s4-prompt",
+   "from": 951,
+   "frames": 306,
+   "voFrom": 9,
+   "speechFrames": 117,
+   "vo": null,
+   "subs": [
+    {
+     "text": "這是我完整的 prompt",
+     "from": 9,
+     "to": 100
+    },
+    {
+     "text": "就這幾句",
+     "from": 100,
+     "to": 126
+    }
+   ]
+  },
+  {
+   "id": "s5-build",
+   "from": 1257,
+   "frames": 393,
+   "voFrom": 8,
+   "speechFrames": 372,
+   "vo": null,
+   "subs": [
+    {
+     "text": "接著全交給 AI：",
+     "from": 8,
+     "to": 61
+    },
+    {
+     "text": "自己抓 OpenStreetMap",
+     "from": 61,
+     "to": 169
+    },
+    {
+     "text": "把 6 萬棟真實建築蓋成 3D",
+     "from": 169,
+     "to": 265
+    },
+    {
+     "text": "再寫 shader 讓窗戶在夜裡亮起來",
+     "from": 265,
+     "to": 379
+    }
+   ]
+  },
+  {
+   "id": "s6-bug",
+   "from": 1650,
+   "frames": 393,
+   "voFrom": 8,
+   "speechFrames": 372,
+   "vo": null,
+   "subs": [
+    {
+     "text": "我當 QA：",
+     "from": 8,
+     "to": 47
+    },
+    {
+     "text": "「啟動未來會閃黑色方塊」→",
+     "from": 47,
+     "to": 131
+    },
+    {
+     "text": "它追到是 three.js 法向量除以零變成 NaN、被光暈放大",
+     "from": 131,
+     "to": 347
+    },
+    {
+     "text": "幾行就修好",
+     "from": 347,
+     "to": 379
+    }
+   ]
+  },
+  {
+   "id": "s7-demo",
+   "from": 2043,
+   "frames": 357,
+   "voFrom": 8,
+   "speechFrames": 313,
+   "vo": null,
+   "subs": [
+    {
+     "text": "開小黃到松山機場",
+     "from": 8,
+     "to": 65
+    },
+    {
+     "text": "按下時光機：",
+     "from": 65,
+     "to": 103
+    },
+    {
+     "text": "跑道消失",
+     "from": 103,
+     "to": 135
+    },
+    {
+     "text": "300 公頃 AI 園區、110 公頃中央公園一棟棟長出來",
+     "from": 135,
+     "to": 321
+    }
+   ]
+  },
+  {
+   "id": "s8-deliver",
+   "from": 2399,
+   "frames": 210,
+   "voFrom": 8,
+   "speechFrames": 189,
+   "vo": null,
+   "subs": [
+    {
+     "text": "懶人包、逐字稿、簡報",
+     "from": 8,
+     "to": 79
+    },
+    {
+     "text": "手機都能看",
+     "from": 79,
+     "to": 118
+    },
+    {
+     "text": "連網域都請 AI 接好了",
+     "from": 118,
+     "to": 197
+    }
+   ]
+  },
+  {
+   "id": "s9-cta",
+   "from": 2609,
+   "frames": 328,
+   "voFrom": 8,
+   "speechFrames": 254,
+   "vo": null,
+   "subs": [
+    {
+     "text": "ai2033.taipei",
+     "from": 8,
+     "to": 109
+    },
+    {
+     "text": "程式碼全部開源",
+     "from": 109,
+     "to": 167
+    },
+    {
+     "text": "AI黃金世紀",
+     "from": 167,
+     "to": 218
+    },
+    {
+     "text": "從臺北開始！",
+     "from": 218,
+     "to": 262
+    }
+   ]
+  }
+ ]
+}

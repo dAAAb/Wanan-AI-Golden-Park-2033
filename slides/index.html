@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>簡報｜AI黃金世紀，從臺北開始（2026/10/08 記者會）</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* one deliberate look: the deck's own navy + gold */
+:root{--bg:#0b1730;--panel:#11224a;--panel2:#18305f;--line:rgba(255,255,255,.16);--fg:#f4f6fb;--muted:#b4c0da;--gold:#ffc83d;--gold-ink:#1a1200;--shade:rgba(0,0,0,.55);color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;font-size:18px;line-height:1.6}
+.app{max-width:1240px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:grid;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 24px}
+header>div{min-width:0}
+.kicker{margin:0;color:var(--gold);font-weight:700;font-size:15px;letter-spacing:.06em}
+h1{margin:2px 0 0;font-size:clamp(24px,3.4vw,34px);font-weight:900;line-height:1.25;text-wrap:balance}
+h1 span{color:var(--gold)}
+.dl{display:flex;flex-wrap:wrap;gap:10px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:inherit;font-weight:700;font-size:17px;line-height:1.2;padding:11px 16px;border-radius:12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;min-height:46px}
+.btn:hover{background:var(--panel2)}
+.btn.gold{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.btn.gold:hover{filter:brightness(1.06)}
+.btn:focus-visible,.thumb:focus-visible,.nav:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.msg{margin:-6px 0 0;font-size:15px;color:var(--muted);min-height:1.5em}
+.stage{position:relative;aspect-ratio:16/9;width:100%;max-width:100%;background:#000;border-radius:14px;overflow:hidden;box-shadow:0 22px 60px rgba(0,0,0,.45)}
+.stage img{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.stage:fullscreen{border-radius:0;aspect-ratio:auto}
+.nav{position:absolute;top:0;bottom:0;width:16%;border:0;background:transparent;color:#fff;font-size:44px;font-weight:900;cursor:pointer;opacity:0;transition:opacity .2s}
+.nav.prev{left:0;background:linear-gradient(90deg,var(--shade),transparent)}
+.nav.next{right:0;background:linear-gradient(270deg,var(--shade),transparent)}
+.stage:hover .nav,.nav:focus-visible{opacity:1}
+.nav:disabled{display:none}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.count{font-weight:900;font-size:22px;font-variant-numeric:tabular-nums;color:var(--gold);min-width:4.2em}
+.stitle{flex:1 1 260px;min-width:0;margin:0;font-size:21px;font-weight:700;line-height:1.4}
+.pager{display:flex;gap:8px}
+.pager .btn{font-size:20px;padding-inline:18px}
+.notes{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px}
+.notes h2,.toc h2{margin:0 0 6px;font-size:14px;font-weight:700;letter-spacing:.1em;color:var(--muted)}
+.notes p{margin:0;font-size:20px;line-height:1.75;max-width:62em}
+.toc{display:grid;gap:10px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin:0;padding:0;list-style:none}
+.thumb{position:relative;display:block;width:100%;aspect-ratio:16/9;padding:0;border:3px solid transparent;border-radius:10px;overflow:hidden;background:#000;cursor:pointer}
+.thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.thumb b{position:absolute;left:6px;bottom:6px;font-size:14px;font-weight:900;line-height:1;padding:4px 7px;border-radius:7px;background:var(--shade);color:#fff}
+.thumb[aria-current="true"]{border-color:var(--gold)}
+footer{font-size:15px;color:var(--muted);display:grid;gap:6px;border-top:1px solid var(--line);padding-top:14px}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 18px}
+footer a{color:var(--gold);font-weight:700}
+kbd{font-family:inherit;font-size:.85em;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+@media (max-width:640px){
+  body{font-size:17px}
+  .notes p{font-size:18px}
+  .nav{opacity:1;width:20%;font-size:34px;background:transparent}
+  .thumbs{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+}
+</style>
+<meta name="description" content="「AI黃金世紀，從臺北開始」16 頁簡報線上翻閱：松山機場遷移、300 公頃臺北AI園區、110 公頃中央公園，附講者備註與 PPTX／PDF 下載（非官方整理）。">
+<link rel="canonical" href="https://ai2033.taipei/slides/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AI黃金世紀，從臺北開始！簡報">
+<meta property="og:description" content="「AI黃金世紀，從臺北開始」16 頁簡報線上翻閱：松山機場遷移、300 公頃臺北AI園區、110 公頃中央公園，附講者備註與 PPTX／PDF 下載（非官方整理）。">
+<meta property="og:url" content="https://ai2033.taipei/slides/">
+<meta property="og:image" content="https://ai2033.taipei/slides/img/s-01.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0b1730">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<style>html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <p class="kicker">非官方整理｜2026.10.08 臺北市政府記者會</p>
+      <h1>AI黃金世紀，<span>從臺北開始！</span> 簡報</h1>
+    </div>
+    <div class="dl">
+      <a class="btn gold" id="getPptx" href="AI-Golden-Century-Taipei.pptx" download>⬇ 下載 PPT（.pptx）</a>
+      <a class="btn" id="getPdf" href="AI-Golden-Century-Taipei.pdf" target="_blank" rel="noopener">⬇ 下載 PDF</a>
+    </div>
+  </header>
+  <p class="msg" id="msg" aria-live="polite"></p>
+
+  <section aria-label="投影片">
+    <div class="stage" id="stage">
+      <img id="slide" alt="" width="1920" height="1080">
+      <button class="nav prev" id="prev" aria-label="上一張">‹</button>
+      <button class="nav next" id="next" aria-label="下一張">›</button>
+    </div>
+  </section>
+
+  <div class="bar">
+    <span class="count" id="count">1 / 16</span>
+    <p class="stitle" id="stitle"></p>
+    <div class="pager">
+      <button class="btn" id="prev2" aria-label="上一張">←</button>
+      <button class="btn" id="next2" aria-label="下一張">→</button>
+      <button class="btn" id="full" hidden>⛶ 全螢幕</button>
+    </div>
+  </div>
+
+  <section class="notes" aria-labelledby="notesH">
+    <h2 id="notesH">講者備註</h2>
+    <p id="notes"></p>
+  </section>
+
+  <section class="toc" aria-labelledby="tocH">
+    <h2 id="tocH">全部 16 頁（點一下跳到該頁；鍵盤 <kbd>←</kbd> <kbd>→</kbd> 翻頁）</h2>
+    <ol class="thumbs" id="thumbs"></ol>
+  </section>
+
+  <footer>
+    <nav>
+      <a href="../">🌐 大字版互動網站</a>
+      <a href="../3d/">🚕 3D 臺北 2033</a>
+      <a href="../transcript/">📜 記者會逐字稿</a>
+    </nav>
+    <span>非官方粉絲整理，資料依臺北市政府 2026/10/08 新聞稿與媒體報導；園區配置為示意，非正式設計圖。</span>
+  </footer>
+</div>
+
+<script>
+const SLIDES = [{"t": "AI黃金世紀，從臺北開始！", "n": "開場：2026 年 10 月 8 日，臺北市長蔣萬安在市府大數據中心召開「打造AI黃金世紀、全面釋放都市潛力」記者會，宣布規劃遷移松山機場，整合機場及周邊 300 公頃，打造全新的臺北AI園區。", "img": "img/s-01.jpg", "th": "thumb/s-01.jpg"}, {"t": "一張圖看懂：松山機場變身臺北AI園區", "n": "核心概念：松機及周邊 300 公頃，分成 100 公頃 AI 產業聚落、90 公頃國際永續生活聚落、110 公頃中央公園；同時解鎖 570 公頃受航高限制的都更地區。產業局推估 12 兆產值。", "img": "img/s-02.jpg", "th": "thumb/s-02.jpg"}, {"t": "輝達來了，臺北最缺的是「腹地」", "n": "今年初輝達選擇臺北、落腳北士科。但臺北三大科技園區都滿了：北士科只剩 T3、T4、T12，內科、南軟也沒有大面積產業用地。洲美已規劃為北士科二期，仍不夠。", "img": "img/s-03.jpg", "th": "thumb/s-03.jpg"}, {"t": "半世紀前竹科，半世紀後臺北", "n": "蔣萬安以竹科為例：1970 年代竹科構想也受質疑，五十年後成就護國群山。現在世界正在走進臺北，必須當機立斷。", "img": "img/s-04.jpg", "th": "thumb/s-04.jpg"}, {"t": "300 公頃怎麼用？", "n": "300 公頃：100 公頃 AI 產業聚落、90 公頃國際永續生活聚落、110 公頃中央公園。另外打開 570 公頃受航高限制影響的都更劃定地區。", "img": "img/s-05.jpg", "th": "thumb/s-05.jpg"}, {"t": "2026 ⇄ 2033：一樣的地，完全不同的未來", "n": "左圖是今天的松山機場，右圖是依市府新聞稿描述繪製的 2033 示意：北半側 110 公頃中央公園，南側 AI 產業聚落與國際永續生活聚落。", "img": "img/s-06.jpg", "th": "thumb/s-06.jpg"}, {"t": "100 公頃 AI 產業聚落：預估 12 兆產值", "n": "AI 產業聚落以松南營區、松機南側與中央整合。產業局以內科每公頃 360 億產值估算 12 兆，6.5 萬就業。", "img": "img/s-07.jpg", "th": "thumb/s-07.jpg"}, {"t": "110 公頃中央公園：臺北的「綠色脊柱」", "n": "110 公頃中央公園在松機北半側，相當於大安森林公園四倍大，打造都市生態的綠色脊柱，結合基隆河大直段河岸再造。", "img": "img/s-08.jpg", "th": "thumb/s-08.jpg"}, {"t": "解鎖 570 公頃都更：增加約 15 萬戶", "n": "航高限制讓周邊老公寓無法都更。松機遷移後約 570 公頃都更地區解鎖，加上園區開發，可增加約 15 萬戶。", "img": "img/s-09.jpg", "th": "thumb/s-09.jpg"}, {"t": "打通交通任督二脈：XY 軸捷運＋跨河廊道", "n": "交通：XY 軸捷運，Y 軸南北向從松機往南到中和；X 軸東西向串聯士林大同線、圓山、松機、內湖。跨河廊道：基湖路、敬業三路、北安路，民族東路東延，紓解內科、大直通勤。", "img": "img/s-10.jpg", "th": "thumb/s-10.jpg"}, {"t": "首都科技廊帶（CTC）：串聯北臺灣 8 縣市", "n": "首都科技廊帶串聯新北、桃園、基隆、宜蘭、新竹縣市、苗栗共 8 縣市，結合李四川、張善政、高虹安、鍾東錦、謝國樑、徐欣瑩、吳宗憲等人推動的建設。", "img": "img/s-11.jpg", "th": "thumb/s-11.jpg"}, {"t": "蔣萬安 ＋ 李四川 ＝ 大台北新矽谷", "n": "雙北合作：李四川認同松機遷移構想，主張 AI 科技廊帶，以蘆社大橋、淡北快線、中和光復線北延，把北士科與臺北AI園區的紅利延伸到新北。", "img": "img/s-12.jpg", "th": "thumb/s-12.jpg"}, {"t": "時程與配套：2033 年，條件成熟", "n": "時程：桃機三航廈 2027 年啟用、第三跑道 2033 年完工，市府目標屆時完成遷移。交通部、內政部表示需審慎評估，市府將全力溝通、爭取中央支持。", "img": "img/s-13.jpg", "th": "thumb/s-13.jpg"}, {"t": "親自開車看：3D 臺北 2033", "n": "網站提供 GTA 風格的 3D 臺北體驗、大字版重點整理、記者會逐字稿與本簡報下載。", "img": "img/s-14.jpg", "th": "thumb/s-14.jpg"}, {"t": "結語：為臺灣開創新的「AI黃金世紀」", "n": "結語：輝達來了，AI 世紀也來了，臺北要抓住這個關鍵時機，讓世界看見臺北，更因為臺北看見臺灣。AI黃金世紀，就從臺北開始。", "img": "img/s-15.jpg", "th": "thumb/s-15.jpg"}, {"t": "資料來源與授權", "n": "資料來源與照片授權。", "img": "img/s-16.jpg", "th": "thumb/s-16.jpg"}];
+// the PDF ships with the page; a .pptx can't be attached to an artifact, so that button stays a link to GitHub
+const FILES = { pdf: ['AI-Golden-Century-Taipei.pdf', 'AI-Golden-Century-Taipei.pdf'] };
+const $ = (id) => document.getElementById(id);
+const N = SLIDES.length;
+let cur = 0;
+
+// thumbnails
+SLIDES.forEach((s, i) => {
+  const li = document.createElement('li');
+  const b = document.createElement('button');
+  b.className = 'thumb'; b.type = 'button'; b.setAttribute('aria-label', `第 ${i + 1} 頁：${s.t}`);
+  const im = document.createElement('img'); im.src = s.th; im.alt = ''; im.loading = 'lazy'; im.width = 480; im.height = 270;
+  const n = document.createElement('b'); n.textContent = i + 1;
+  b.append(im, n); b.addEventListener('click', () => { go(i); $('stage').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+  li.append(b); $('thumbs').append(li);
+});
+const thumbs = [...document.querySelectorAll('.thumb')];
+
+function go(i) {
+  cur = Math.max(0, Math.min(N - 1, i));
+  const s = SLIDES[cur];
+  $('slide').src = s.img; $('slide').alt = `第 ${cur + 1} 頁：${s.t}`;
+  $('count').textContent = `${cur + 1} / ${N}`;
+  $('stitle').textContent = s.t;
+  $('notes').textContent = s.n || '（本頁沒有備註）';
+  $('prev').disabled = $('prev2').disabled = cur === 0;
+  $('next').disabled = $('next2').disabled = cur === N - 1;
+  thumbs.forEach((t, k) => t.setAttribute('aria-current', k === cur ? 'true' : 'false'));
+  [cur - 1, cur + 1].forEach(k => { if (k >= 0 && k < N) new Image().src = SLIDES[k].img; });
+  try { history.replaceState(null, '', '#' + (cur + 1)); } catch (e) {}
+}
+['prev', 'prev2'].forEach(id => $(id).addEventListener('click', () => go(cur - 1)));
+['next', 'next2'].forEach(id => $(id).addEventListener('click', () => go(cur + 1)));
+addEventListener('keydown', (e) => {
+  if (e.altKey || e.ctrlKey || e.metaKey || /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  const k = e.key;
+  if (k === 'ArrowRight' || k === 'PageDown' || (k === ' ' && document.fullscreenElement)) { go(cur + 1); e.preventDefault(); }
+  else if (k === 'ArrowLeft' || k === 'PageUp') { go(cur - 1); e.preventDefault(); }
+  else if (k === 'Home') { go(0); e.preventDefault(); }
+  else if (k === 'End') { go(N - 1); e.preventDefault(); }
+});
+// swipe on the slide
+let tx = null, ty = 0;
+$('stage').addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+$('stage').addEventListener('touchend', (e) => {
+  if (tx === null) return;
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; tx = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(cur + (dx < 0 ? 1 : -1));
+});
+// full screen where the host allows it
+if (document.fullscreenEnabled) {
+  $('full').hidden = false;
+  $('full').addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else $('stage').requestFullscreen().catch(() => { $('full').hidden = true; });
+  });
+}
+const start = parseInt((location.hash || '').slice(1), 10);
+go(start >= 1 && start <= N ? start - 1 : 0);
+
+// downloads: hand over the real files when the viewer allows it; otherwise the buttons stay links to GitHub
+(async () => {
+  let dl = null;
+  try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+  if (!dl) return;
+  for (const [id, key] of [['getPdf', 'pdf']]) {
+    const a = $(id);
+    const onClick = async (e) => {
+      e.preventDefault();
+      const [name, src] = FILES[key];
+      $('msg').textContent = '準備檔案中…';
+      try {
+        const res = await fetch(src);
+        if (!res.ok) throw { code: 'fetch' };
+        const blob = await res.blob();
+        await dl.save({ filename: name, data: blob });
+        $('msg').textContent = '';
+      } catch (err) {
+        const code = err && err.code;
+        if (code === 'declined') { $('msg').textContent = ''; return; }
+        if (code === 'rate_limited') { $('msg').textContent = '下載視窗已開啟，請先完成或關閉它。'; return; }
+        // this view can't save files: fall back to the GitHub copy for the next click
+        a.removeEventListener('click', onClick);
+        $('msg').textContent = '這個檢視環境無法直接下載，再按一次按鈕會開啟 GitHub 下載頁。';
+      }
+    };
+    a.addEventListener('click', onClick);
+  }
+})();
+</script>
+</body>
+</html>

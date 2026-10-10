@@ -83,7 +83,11 @@ page = f'''<!doctype html>
 <title>記者會逐字稿｜AI黃金世紀，就從臺北開始（2026/10/08）</title>
 <meta name="description" content="臺北市長蔣萬安 2026/10/08「打造AI黃金世紀、全面釋放都市潛力」記者會逐字稿：松山機場遷移、300 公頃臺北AI園區、110 公頃中央公園。大字版，可搜尋。">
 <meta property="og:title" content="記者會逐字稿｜AI黃金世紀，就從臺北開始">
-<meta property="og:image" content="https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/assets/og.jpg">
+<link rel="canonical" href="https://ai2033.taipei/transcript/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://ai2033.taipei/transcript/">
+<meta property="og:image" content="https://ai2033.taipei/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📜</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
@@ -103,7 +107,7 @@ page = f'''<!doctype html>
     <img src="../assets/photos/chiang-council.jpg" alt="臺北市長蔣萬安">
     <div class="vid"><iframe title="記者會影片" loading="lazy" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" src="https://www.youtube-nocookie.com/embed/{VID}?rel=0"></iframe></div>
   </div>
-  <div class="actions"><a class="btn" href="transcript.md" download>⬇ 下載文字檔（.md）</a><a class="btn" href="../slides/AI-Golden-Century-Taipei.pdf">📄 簡報 PDF</a><a class="btn gold" href="../3d/index.html">🚕 3D 體驗</a><button class="btn" onclick="print()">🖨 列印</button></div>
+  <div class="actions"><a class="btn" href="transcript.md" download>⬇ 下載文字檔（.md）</a><a class="btn" href="../slides/index.html">📊 簡報</a><a class="btn gold" href="../3d/index.html">🚕 3D 體驗</a><button class="btn" onclick="print()">🖨 列印</button></div>
   {verb_block}
   <section class="block" id="speech">
     <h2>致詞全文（臺北市政府新聞稿版）</h2>

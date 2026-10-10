@@ -7,8 +7,8 @@ const { applyTheme } = require(process.env.APPLY_THEME);
 
 const ROOT = path.resolve(__dirname, '../..');
 const P = (f) => path.join(ROOT, f);
-// public link printed on the deck (the Claude Artifact copy of the site; see artifact_urls.json)
-const SITE = process.env.SITE_URL || JSON.parse(fs.readFileSync(path.join(__dirname, 'artifact_urls.json'), 'utf8')).main;
+// public link printed on the deck
+const SITE = process.env.SITE_URL || 'https://ai2033.taipei/';
 const OUT = P('slides/AI-Golden-Century-Taipei.pptx');
 
 const THEME = {

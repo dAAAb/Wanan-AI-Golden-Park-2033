@@ -12,12 +12,6 @@ await p.waitForTimeout(3000);
 console.log('url', p.url(), 'title', await p.title());
 console.log('body', (await p.evaluate(() => document.body ? document.body.innerText.slice(0, 400) : 'nobody')).replace(/\n/g, ' | '));
 await p.screenshot({ path: 'research/verify/e2e-3d-first.png' });
-if (/External Content Notice/.test(await p.title())) {
-  console.log('githack notice page -> clicking "Open the page"');
-  await Promise.all([p.waitForNavigation({ timeout: 60000 }).catch(() => {}), p.click('text=Open the page')]);
-  await p.waitForTimeout(3000);
-  console.log('after click url', p.url(), 'title', await p.title());
-}
 for (let i = 0; i < 30; i++) {
   await p.waitForTimeout(10000);
   const st = await p.evaluate(() => ({ ready: !!(window.__S && window.__S.ready), load: (document.getElementById('loadText') || {}).textContent || document.title }));
@@ -37,9 +31,9 @@ await p.evaluate(() => __api.look(-1500, 900, 1700, 100, 0, -100)); await p.wait
 const l1 = await lbl(); await p.waitForTimeout(1300); const l2 = await lbl();
 console.log('labels stable: ' + (JSON.stringify(l1) === JSON.stringify(l2)) + ' count=' + l1.length);
 await p.screenshot({ path: 'research/verify/e2e-3d.png' });
-await p.goto(base + '/index.html'); await p.waitForTimeout(3000); if (/External Content Notice/.test(await p.title())) { await Promise.all([p.waitForNavigation({ timeout: 60000 }).catch(() => {}), p.click('text=Open the page')]); await p.waitForTimeout(4000); } console.log('site title', await p.title());
+await p.goto(base + '/index.html'); await p.waitForTimeout(3000); console.log('site title', await p.title());
 await p.screenshot({ path: 'research/verify/e2e-site.png' });
-await p.goto(base + '/transcript/index.html'); await p.waitForTimeout(3000); if (/External Content Notice/.test(await p.title())) { await Promise.all([p.waitForNavigation({ timeout: 60000 }).catch(() => {}), p.click('text=Open the page')]); await p.waitForTimeout(3000); } console.log('transcript title', await p.title());
+await p.goto(base + '/transcript/index.html'); await p.waitForTimeout(3000); console.log('transcript title', await p.title());
 await p.screenshot({ path: 'research/verify/e2e-transcript.png' });
 console.log('all errors:', JSON.stringify(errs.slice(0, 60)));
 await b.close();

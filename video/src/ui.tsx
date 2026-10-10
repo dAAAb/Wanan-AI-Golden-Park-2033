@@ -11,6 +11,8 @@ export const usePop = (at = 0, damping = 14, mass = 0.7) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig();
   return spring({ frame: f - at, fps, config: { damping, mass } });
 };
+// landscape (16:9) vs portrait (9:16) layout
+export const useWide = () => { const { width, height } = useVideoConfig(); return width > height; };
 // 0 -> 1 linear-eased over [a, b]
 export const useRamp = (a: number, b: number) => interpolate(useCurrentFrame(), [a, b], [0, 1], { ...clamp, easing: ease });
 
@@ -29,13 +31,15 @@ export const Bg: React.FC<{ tint?: string }> = ({ tint }) => {
 // full-bleed footage: the 16:9 clip sharp in the middle, a blurred copy filling the vertical frame
 // cover: fill the whole frame instead (cropping the game HUD at the edges)
 export const Footage: React.FC<{ src: string; trim?: number; scale?: number; y?: number; dim?: number; zoom?: [number, number]; cover?: number }> = ({ src, trim = 0, scale = 1.32, y = 0, dim = 0, zoom = [1, 1], cover }) => {
-  const f = useCurrentFrame(); const { durationInFrames } = useVideoConfig();
+  const f = useCurrentFrame(); const { durationInFrames, width: W, height: H } = useVideoConfig();
   const z = interpolate(f, [0, durationInFrames], zoom, clamp);
-  if (cover) {
-    const ch = 1920 * cover, cw = (ch * 16) / 9;
+  const wide = W > H;
+  if (cover || wide) {
+    const k = cover ?? 1.0;
+    const ch = (wide ? H : 1920) * k, cw = (ch * 16) / 9;
     return (
       <AbsoluteFill style={{ overflow: 'hidden' }}>
-        <OffthreadVideo src={staticFile(src)} trimBefore={trim} muted style={{ position: 'absolute', width: cw, height: ch, left: (1080 - cw) / 2, top: (1920 - ch) / 2 + y, transform: `scale(${z})` }} />
+        <OffthreadVideo src={staticFile(src)} trimBefore={trim} muted style={{ position: 'absolute', width: cw, height: ch, left: (W - cw) / 2, top: (H - ch) / 2 + y, transform: `scale(${z})` }} />
         {dim ? <AbsoluteFill style={{ background: `rgba(6,13,29,${dim})` }} /> : null}
       </AbsoluteFill>
     );
@@ -55,24 +59,28 @@ export const Chip: React.FC<{ children: React.ReactNode; gold?: boolean; size?: 
 );
 
 // persistent link chip for traffic
-export const Brand: React.FC<{ hide?: boolean }> = ({ hide }) => (
-  <div style={{ position: 'absolute', top: 92, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: hide ? 0 : 1 }}>
-    <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: 30, color: C.white, background: 'rgba(6,13,29,.72)', border: '2px solid rgba(255,200,61,.6)', borderRadius: 999, padding: '10px 26px', letterSpacing: 0.5 }}>
-      臺北 2033 <span style={{ color: C.gold }}>· ai2033.taipei</span>
+export const Brand: React.FC<{ hide?: boolean }> = ({ hide }) => {
+  const wide = useWide();
+  return (
+    <div style={{ position: 'absolute', top: wide ? 30 : 92, right: wide ? 40 : 0, left: wide ? undefined : 0, display: 'flex', justifyContent: 'center', opacity: hide ? 0 : 1 }}>
+      <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: wide ? 26 : 30, color: C.white, background: 'rgba(6,13,29,.72)', border: '2px solid rgba(255,200,61,.6)', borderRadius: 999, padding: '10px 26px', letterSpacing: 0.5 }}>
+        臺北 2033 <span style={{ color: C.gold }}>· ai2033.taipei</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // subtitle for the current chunk, bottom third (clear of the Reels/Shorts buttons)
 export const Subtitle: React.FC<{ subs: { text: string; from: number; to: number }[] }> = ({ subs }) => {
   const f = useCurrentFrame();
+  const wide = useWide();
   const i = subs.findIndex((s, k) => f >= s.from && (f < (subs[k + 1]?.from ?? s.to + 20)));
   if (i < 0) return null;
   const s = subs[i];
   const a = interpolate(f, [s.from, s.from + 5], [0, 1], clamp);
   return (
-    <div style={{ position: 'absolute', left: 60, right: 60, top: 1500, display: 'flex', justifyContent: 'center' }}>
-      <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: 54, lineHeight: 1.32, color: C.white, textAlign: 'center', textWrap: 'balance', padding: '14px 28px', borderRadius: 22, background: 'rgba(6,13,29,.78)', opacity: a, transform: `translateY(${(1 - a) * 14}px)`, textShadow: '0 2px 0 rgba(0,0,0,.4)' } as React.CSSProperties}>{s.text}</div>
+    <div style={{ position: 'absolute', left: wide ? 200 : 60, right: wide ? 200 : 60, ...(wide ? { bottom: 56 } : { top: 1500 }), display: 'flex', justifyContent: 'center' }}>
+      <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: wide ? 46 : 54, lineHeight: 1.32, color: C.white, textAlign: 'center', textWrap: 'balance', padding: '14px 28px', borderRadius: 22, background: 'rgba(6,13,29,.78)', opacity: a, transform: `translateY(${(1 - a) * 14}px)`, textShadow: '0 2px 0 rgba(0,0,0,.4)' } as React.CSSProperties}>{s.text}</div>
     </div>
   );
 };
@@ -170,5 +178,6 @@ export const Roll: React.FC<{ from: string; to: string; t: number; size: number;
 
 export const Kicker: React.FC<{ children: React.ReactNode; y?: number }> = ({ children, y = 230 }) => {
   const a = usePop(2);
-  return <div style={{ position: 'absolute', top: y, left: 0, right: 0, textAlign: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 40, color: C.gold, letterSpacing: 2, opacity: a, transform: `translateY(${(1 - a) * 20}px)` }}>{children}</div>;
+  const wide = useWide();
+  return <div style={{ position: 'absolute', top: wide ? 44 : y, left: 0, right: 0, textAlign: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 40, color: C.gold, letterSpacing: 2, opacity: a, transform: `translateY(${(1 - a) * 20}px)` }}>{children}</div>;
 };

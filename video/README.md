@@ -1,6 +1,6 @@
 # 臺北 2033 介紹影片（Remotion）
 
-直式 1080×1920、約 80–95 秒的導流短片：網友留言 → 構想 → 完整 prompt → 程式碼特寫（OpenStreetMap、GLSL 窗光、NaN 黑方塊 bug）→ 3D 實機畫面 → 網站／逐字稿／簡報 → `ai2033.taipei`。
+直式 1080×1920（`IntroVertical`）與橫式 1920×1080（`IntroWide`）、約 90 秒的導流短片：網友留言 → 構想 → 完整 prompt → 程式碼特寫（OpenStreetMap、GLSL 窗光、NaN 黑方塊 bug）→ 3D 實機畫面 → 網站／逐字稿／簡報 → `ai2033.taipei`。
 
 ## 流程
 
@@ -22,7 +22,9 @@
    cd video && npm install
    node scripts/timing.mjs
    npx remotion render src/index.ts IntroVertical out/intro.mp4 --props='{"modelLabel":"Claude","bgm":true}'
+   npx remotion render src/index.ts IntroWide out/intro-wide.mp4 --props='{"modelLabel":"Claude","bgm":true}'
    ```
+   兩個版本共用同一條時間軸與旁白，各幕在 `src/scenes.tsx` 依畫面比例切換直式／橫式版面。
    `modelLabel` 是第 3 幕畫面上顯示的 AI 模型名稱；`bgm:false` 輸出無配樂版（保留音效）。
 
 音樂與音效出處見 `public/sfx/ATTRIBUTION.md`（Mixkit 免費授權）。部分鏡頭參考 [video-shotcraft](https://github.com/Vincentwei1021/video-shotcraft) 的配方。

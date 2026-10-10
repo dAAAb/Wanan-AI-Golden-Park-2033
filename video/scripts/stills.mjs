@@ -6,7 +6,7 @@ const [out, ...frames] = process.argv.slice(2);
 const serveUrl = await bundle({ entryPoint: path.resolve('src/index.ts') });
 const browserExecutable = process.env.REMOTION_BROWSER || null;
 const inputProps = JSON.parse(process.env.PROPS || '{}');
-const composition = await selectComposition({ serveUrl, id: 'IntroVertical', inputProps, browserExecutable });
+const composition = await selectComposition({ serveUrl, id: process.env.COMP || 'IntroVertical', inputProps, browserExecutable });
 for (const fr of frames) {
   await renderStill({ composition, serveUrl, frame: +fr, output: `${out}/f${fr}.jpg`, imageFormat: 'jpeg', jpegQuality: 80, scale: 0.5, inputProps, browserExecutable });
   console.log('still', fr);

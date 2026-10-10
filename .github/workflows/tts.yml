@@ -1,0 +1,22 @@
+name: tts
+# Narration for the intro video (video/narration.json) in the project owner's ElevenLabs voice.
+# Needs the repository secret ELEVENLABS_API_KEY.
+on:
+  workflow_dispatch:
+  push:
+    paths: ['video/narration.json', 'tools/fetch/tts.py']
+permissions:
+  contents: write
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - name: Synthesize narration
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: python3 tools/fetch/tts.py video/narration.json video/public/vo
+      - run: 'bash tools/fetch/commit.sh "chore(video): narration audio" video/public/vo'

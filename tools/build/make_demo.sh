@@ -14,9 +14,9 @@ ffmpeg -y -loglevel error \
   -framerate "$FPS" -i "$FR/f%05d.jpg" \
   -loop 1 -framerate "$FPS" -t "$END" -i "$OUT/card-outro.jpg" \
   -filter_complex "[0:v]scale=1280:720,setsar=1,fps=$FPS,format=yuv420p[a];[1:v]scale=1280:720,setsar=1,fps=$FPS,format=yuv420p[b];[2:v]scale=1280:720,setsar=1,fps=$FPS,format=yuv420p[c];[a][b]xfade=transition=fade:duration=$X:offset=$OFF1[ab];[ab][c]xfade=transition=fade:duration=$X:offset=$OFF2[v]" \
-  -map "[v]" -c:v libx264 -preset slow -crf 22 -pix_fmt yuv420p -movflags +faststart "$OUT/demo.mp4"
-# README preview: the time machine, 14 s at 10 fps, 640 px wide
-ffmpeg -y -loglevel error -ss 8 -t 14 -i "$OUT/demo.mp4" \
-  -vf "fps=10,scale=640:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=160:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle" \
+  -map "[v]" -c:v libx264 -preset slow -crf 28 -maxrate 2800k -bufsize 5600k -pix_fmt yuv420p -movflags +faststart "$OUT/demo.mp4"
+# README preview: the time machine, 11 s at 6 fps, 640 px wide (~7 MB, GitHub shows GIFs inline)
+ffmpeg -y -loglevel error -ss 8 -t 11 -i "$OUT/demo.mp4" \
+  -vf "fps=6,scale=640:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=112:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" \
   "$OUT/demo.gif"
 ls -la "$OUT/demo.mp4" "$OUT/demo.gif"

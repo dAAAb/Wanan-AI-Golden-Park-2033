@@ -2,6 +2,7 @@
 // requestAnimationFrame, performance.now and setTimeout are replaced once the scene is ready, so every
 // frame advances exactly 1/FPS s of game time no matter how slowly the software renderer draws it.
 // usage: node tools/build/record_demo.mjs <framesDir> [baseUrl] [fps] [maxFrames]
+//   NO_CAPTION=1 hides the guided tour's own caption (for footage that gets its own subtitles, e.g. video/)
 //   then: ffmpeg (see tools/build/make_demo.sh)
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 import fs from 'fs';
@@ -34,7 +35,7 @@ await p.addInitScript(() => {
 });
 await p.goto(base);
 await p.waitForFunction(() => window.__S && window.__S.ready, null, { timeout: 300000 });
-await p.addStyleTag({ content: '#toast{display:none!important} .lbl{animation:none!important}' });
+await p.addStyleTag({ content: '#toast{display:none!important} .lbl{animation:none!important}' + (process.env.NO_CAPTION ? ' #caption{display:none!important}' : '') });
 await p.click('#btnStart');
 await p.waitForTimeout(2500);
 // the loop's next real frame queues into the virtual one

@@ -10,7 +10,7 @@
    - 旁白檔不進 git（`public/vo/` 已忽略）
 2. **3D 畫面**：`public/clips/*.mp4` 由 `tools/build/record_demo.mjs` 錄的逐格畫面切出（不進 git）：
    ```bash
-   node tools/build/record_demo.mjs /tmp/frames
+   NO_CAPTION=1 node tools/build/record_demo.mjs /tmp/frames   # 影片有自己的字幕，所以關掉遊戲導覽字幕
    cd video/public/clips
    for seg in "drive 0 210" "timemachine 210 375" "tour 585 570" "night 1155 180"; do set -- $seg
      ffmpeg -y -framerate 30 -start_number $2 -i /tmp/frames/f%05d.jpg -frames:v $3 -c:v libx264 -crf 18 -pix_fmt yuv420p $1.mp4; done

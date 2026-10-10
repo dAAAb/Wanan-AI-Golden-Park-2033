@@ -1,8 +1,6 @@
-url https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/3d/index.html title External Content Notice | rawgit.hack
-body  rawgit.hack | Status Source code Report abuse | Build and run apps in over 115 regions with MongoDB Atlas, the database for every enterprise. | www.mongodb.com | Ads by EthicalAds |  | One more step | This HTML page is hosted on raw.githubusercontent.com and proxied as-is. | rawgit.hack does not review third-party content. |  | You're going to open:  | Open the page | Go to homepage |  | Not sure about the source? Avoid ent
-githack notice page -> clicking "Open the page"
-after click url https://raw.githack.com/dAAAb/Wanan-AI-Golden-Park-2033/claude/taipei-ai-park-interactive-wsso9d/3d/index.html title 臺北 2033：松機變身 AI 園區 3D 體驗
-t=23.463s ready=true load=完成！按「開始任務」上路
+url https://ai2033.taipei/3d/index.html title 臺北 2033：松機變身 AI 園區 3D 體驗
+body 非官方粉絲作品｜2026.10.08 臺北市政府記者會 |  | 臺北2033 |  | 松機變身 AI 園區・沉浸式 3D 體驗 |  | 臺北市長蔣萬安宣布：規劃遷移松山機場，整合機場及周邊 300 公頃，打造全新「臺北AI園區」。開著台北小黃，親眼看松山機場在 2033 年變身吧！ |  | 「我的第一個任期，成功爭取輝達進駐；我的第二個任期，要抓住AI這樣的歷史性機遇，為臺灣開創新的『AI黃金世紀』。」 | 完成！按「開始任務」上路 | ▶ 開始任務 | 🎬 看導覽動畫 | ← 回介紹網站 |  | 非官方粉絲作品。地圖 © OpenStreetMap 貢獻者；園區配置為依市府新聞稿繪製之示意，非正式設計圖。
+t=25.022s ready=true load=完成！按「開始任務」上路
 errors: []
 drive test: startedInsideBuilding=false moved=1.1m
 labels stable: true count=8

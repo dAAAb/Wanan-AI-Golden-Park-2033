@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>cards</title>
+<!-- Title cards for the README / GitHub social preview / demo video, rendered by tools/build/cards.mjs -->
+<style>
+  :root{--navy:#0b1730;--gold:#ffc83d;--cream:#fff8e6}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--navy);font-family:"Noto Sans TC",system-ui,sans-serif;color:#fff}
+  .card{position:relative;overflow:hidden;width:var(--w);height:var(--h);background:var(--navy) center/cover no-repeat}
+  .card::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,23,48,.96) 0%,rgba(11,23,48,.86) 42%,rgba(11,23,48,.25) 75%,rgba(11,23,48,.05) 100%)}
+  .in{position:absolute;inset:0;padding:56px 64px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+  .kicker{font-weight:700;font-size:24px;color:var(--gold);letter-spacing:.04em}
+  h1{margin:0;font-weight:900;font-size:76px;line-height:1.12;text-shadow:0 4px 24px rgba(0,0,0,.45)}
+  h1 span{color:var(--gold)}
+  .sub{font-weight:700;font-size:28px;color:var(--cream)}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .chips b{font-size:22px;font-weight:700;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28)}
+  .url{margin-top:10px;display:inline-flex;align-self:flex-start;align-items:center;gap:12px;font-weight:900;font-size:40px;color:#1a1200;background:var(--gold);padding:8px 24px;border-radius:16px;letter-spacing:.02em}
+  .portrait{position:absolute;right:64px;top:50%;transform:translateY(-50%);width:300px;height:300px;border-radius:50%;border:8px solid var(--gold);background:#ccc center 18%/cover no-repeat;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .portrait i{position:absolute;left:50%;bottom:-54px;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-weight:900;font-size:24px;background:rgba(11,23,48,.85);padding:4px 14px;border-radius:10px}
+  .fine{position:absolute;left:64px;bottom:26px;font-size:17px;color:rgba(255,255,255,.7)}
+  .center .in{align-items:center;text-align:center}
+  .center::before{background:radial-gradient(ellipse at center,rgba(11,23,48,.72) 0%,rgba(11,23,48,.9) 70%)}
+  .center .url{align-self:center}
+  .center .fine{left:0;right:0;text-align:center}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const card = q.get('card') || 'social';
+const W = { social: 1280, intro: 1280, outro: 1280 }[card], H = { social: 640, intro: 720, outro: 720 }[card];
+const bg = { social: '../../assets/renders/aerial-2033.jpg', intro: '../../assets/renders/aerial-2026.jpg', outro: '../../assets/renders/hero-night.jpg' }[card];
+const html = {
+  social: `<div class="in">
+      <div class="kicker">非官方整理｜2026.10.08 臺北市政府記者會</div>
+      <h1>AI黃金世紀，<br><span>從臺北開始！</span></h1>
+      <div class="sub">松山機場變身 300 公頃臺北AI園區・110 公頃中央公園</div>
+      <div class="chips"><b>🚕 3D 臺北 GTA 體驗</b><b>🔤 大字網站</b><b>📜 逐字稿</b><b>📊 簡報</b></div>
+      <div class="url">ai2033.taipei</div>
+    </div>
+    <div class="portrait" style="background-image:url(../../assets/photos/chiang-portrait-crop.jpg)"><i>臺北市長 蔣萬安</i></div>`,
+  intro: `<div class="in">
+      <div class="kicker">臺北 2033・3D 沉浸式體驗</div>
+      <h1>開著小黃，<br><span>看松機變身 AI 園區</span></h1>
+      <div class="sub">2026 ⇄ 2033：300 公頃臺北AI園區・110 公頃中央公園</div>
+      <div class="url">ai2033.taipei</div>
+    </div>
+    <div class="fine">非官方粉絲作品・地圖 © OpenStreetMap 貢獻者・園區配置為依市府新聞稿繪製之示意</div>`,
+  outro: `<div class="in">
+      <div class="kicker">AI黃金世紀，從臺北開始</div>
+      <h1>換你開車，<br><span>親眼看 2033</span></h1>
+      <div class="url">ai2033.taipei</div>
+      <div class="sub">大字網站・3D 體驗・記者會逐字稿・簡報下載</div>
+    </div>
+    <div class="fine">非官方粉絲作品・地圖 © OpenStreetMap 貢獻者</div>`,
+}[card];
+const root = document.getElementById('root');
+root.innerHTML = `<div class="card${card === 'outro' ? ' center' : ''}" style="--w:${W}px;--h:${H}px;background-image:url(${bg})">${html}</div>`;
+document.fonts.ready.then(() => { document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>

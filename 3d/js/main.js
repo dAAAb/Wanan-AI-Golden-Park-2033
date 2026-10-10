@@ -1128,11 +1128,12 @@ function updateRadar() {
   const mm = minimapImgs[S.year > 0.5 ? 1 : 0]; if (!mm) return;
   const W = 260, px = S.mode === 'drive' ? S.car.x : camera.position.x, pz = S.mode === 'drive' ? S.car.z : camera.position.z;
   const heading = S.mode === 'drive' ? S.car.h : S.drone.yaw + Math.PI;
-  const range = S.mode === 'drive' ? 420 + Math.abs(S.car.v) * 8 : THREE.MathUtils.clamp(camera.position.y * 2, 500, 2200);
-  const k = (W / 2) / range * (1 / mm.sc);
+  // radius shown, in metres (the map image has ~0.13 px per metre, so stay above ~1 km to keep it sharp)
+  const range = S.mode === 'drive' ? 1100 + Math.abs(S.car.v) * 15 : THREE.MathUtils.clamp(camera.position.y * 2.2, 1100, 4000);
+  const k = (W / 2) / range / mm.sc;   // radar px per map-image px
   radar.save(); radar.fillStyle = '#1c2532'; radar.fillRect(0, 0, W, W);
   radar.translate(W / 2, W / 2); radar.rotate(heading + Math.PI);
-  radar.scale(k * mm.sc, k * mm.sc);
+  radar.scale(k, k);
   radar.drawImage(mm.c, -(px - mm.b[0]) * mm.sc, -(pz - mm.b[1]) * mm.sc);
   radar.restore();
   // target blip
@@ -1202,5 +1203,7 @@ window.__api = {
   blocked: (x, z) => blocked(x, z),
   camera,
   wheelColor(c) { taxi.userData.wheels.forEach(w => { w.material = w.material.clone(); w.material.color.setHex(c); }); },
+  cutscene() { transformCutscene(); },                 // demo recording (tools/build/record_demo.mjs)
+  tour(t0 = 0) { startTour(); S.tour.t = t0; },
   step(n, dt, keys) { Object.assign(S.keys, keys || {}); for (let i = 0; i < n; i++) updateCar(dt); S.keys = {}; return { ...S.car }; },
 };
